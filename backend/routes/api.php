@@ -20,6 +20,7 @@ Route::prefix('v1')->group(function () {
         // Lectura: admin, operador y consulta
         Route::get('dashboard', V1\DashboardController::class);
         Route::get('reportes', V1\ReporteController::class);
+        Route::get('academic/buscar', [V1\GraduadoController::class, 'buscarApiExterna']);
         Route::get('graduados', [V1\GraduadoController::class, 'index']);
         Route::get('graduados/{graduado}', [V1\GraduadoController::class, 'show']);
         Route::get('titulaciones', [V1\TitulacionController::class, 'index']);

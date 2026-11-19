@@ -5,11 +5,30 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GraduadoRequest;
 use App\Models\Graduado;
+use App\Services\AcademicService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class GraduadoController extends Controller
 {
+    public function __construct(private AcademicService $academicSvc)
+    {
+    }
+
+    /**
+     * Consulta a la API Académica externa por documento de identidad o carnet.
+     */
+    public function buscarApiExterna(Request $request): JsonResponse
+    {
+        $identificador = $request->query('q') ?? $request->query('identificador');
+        if (empty($identificador)) {
+            return response()->json(['message' => 'Debe ingresar un número de cédula o carnet para consultar la API académica.'], 422);
+        }
+
+        $resultado = $this->academicSvc->buscarEstudiante($identificador);
+
+        return response()->json($resultado);
+    }
     public function index(Request $request)
     {
         return Graduado::query()

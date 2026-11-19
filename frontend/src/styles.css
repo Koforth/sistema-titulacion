@@ -1399,3 +1399,79 @@ input:focus, select:focus, textarea:focus {
   text-align: center;
   font-size: 0.95rem;
 }
+
+/* === CUADRO DE BÚSQUEDA API ACADÉMICA EXTERNA === */
+.academic-search-box {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.academic-search-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.academic-search-header strong {
+  color: #0369a1;
+  font-size: 0.95rem;
+}
+
+.academic-search-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.academic-search-input-group input {
+  flex: 1;
+  border-color: #7dd3fc;
+  min-height: 40px;
+}
+
+.academic-search-input-group input:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+}
+
+.btn-academic-search {
+  background: #0284c7;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.btn-academic-search:hover {
+  background: #0369a1;
+}
+
+.academic-badge-status {
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.academic-badge-status.status-info {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.academic-badge-status.status-success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.academic-badge-status.status-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecdd3;
+}

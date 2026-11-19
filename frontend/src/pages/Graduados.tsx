@@ -138,9 +138,70 @@ export default function Graduados() {
     }
   };
 
+  // Estado de consulta a la API Académica Externa
+  const [academicQuery, setAcademicQuery] = useState('');
+  const [searchingAcademic, setSearchingAcademic] = useState(false);
+  const [academicStatusMsg, setAcademicStatusMsg] = useState<{ kind: 'info' | 'error' | 'success'; text: string } | null>(null);
+
+  const consultarApiExterna = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
+    if (!academicQuery.trim()) {
+      setAcademicStatusMsg({ kind: 'error', text: 'Ingrese un número de cédula o carnet para consultar.' });
+      return;
+    }
+    setSearchingAcademic(true);
+    setAcademicStatusMsg({ kind: 'info', text: 'Consultando API Académica Externa...' });
+    try {
+      const res = await api<{ encontrado: boolean; estudiante?: any; origen?: string }>(
+        `/academic/buscar?q=${encodeURIComponent(academicQuery.trim())}`
+      );
+      if (res && res.estudiante) {
+        const est = res.estudiante;
+        setFormGraduado((prev) => ({
+          ...prev,
+          tipo_identidad: est.tipo_identidad || prev.tipo_identidad,
+          cedula: est.cedula || prev.cedula,
+          carnet: est.carnet || prev.carnet,
+          nombres: est.nombres || prev.nombres,
+          apellidos: est.apellidos || prev.apellidos,
+          nombre_completo: est.nombre_completo || prev.nombre_completo,
+          sexo: est.sexo || prev.sexo,
+          pais: est.pais || prev.pais,
+          estado_civil: est.estado_civil || prev.estado_civil,
+          etnia: est.etnia || prev.etnia,
+          departamento_origen: est.departamento_origen || prev.departamento_origen,
+          municipio_origen: est.municipio_origen || prev.municipio_origen,
+          departamento_residencia: est.departamento_residencia || prev.departamento_residencia,
+          municipio_residencia: est.municipio_residencia || prev.municipio_residencia,
+          direccion_residencia: est.direccion_residencia || prev.direccion_residencia,
+          email: est.email || prev.email,
+          telefono: est.telefono || prev.telefono,
+          linea_telefonica: est.linea_telefonica || prev.linea_telefonica,
+          anio_bachillerato: est.anio_bachillerato || prev.anio_bachillerato,
+          codigo_estudiante: est.carnet || prev.codigo_estudiante,
+          tipo_bachillerato: est.tipo_bachillerato || prev.tipo_bachillerato,
+          turno_bachillerato: est.turno_bachillerato || prev.turno_bachillerato,
+          modalidad_bachillerato: est.modalidad_bachillerato || prev.modalidad_bachillerato,
+        }));
+        setAcademicStatusMsg({
+          kind: 'success',
+          text: `¡Estudiante localizado en ${res.origen ?? 'API Académica'}! Datos autocompletados.`,
+        });
+      } else {
+        setAcademicStatusMsg({ kind: 'error', text: 'No se encontraron datos en la API académica para ese identificador.' });
+      }
+    } catch (err) {
+      setAcademicStatusMsg({ kind: 'error', text: errorMessage(err) });
+    } finally {
+      setSearchingAcademic(false);
+    }
+  };
+
   // Acciones Graduado
   const abrirModalCrearGraduado = () => {
     setEditingGraduado(null);
+    setAcademicQuery('');
+    setAcademicStatusMsg(null);
     setFormGraduado({
       tipo_identidad: 'Cédula de Identidad Nicaragüense',
       cedula: '',
@@ -661,6 +722,43 @@ export default function Graduados() {
             <div className="modal-content-body">
               {stepGraduado === 1 && (
                 <div className="step-content">
+                  {/* Cuadro de Búsqueda API Académica Externa */}
+                  {!editingGraduado && (
+                    <div className="academic-search-box">
+                      <div className="academic-search-header">
+                        <strong>🌐 Consultar en API Académica Externa</strong>
+                        <small className="muted">Autocompletar datos del estudiante por Cédula o Carnet</small>
+                      </div>
+                      <div className="academic-search-input-group">
+                        <input
+                          type="text"
+                          placeholder="Ingrese Cédula (Ej. 441-230600-1010G) o Carnet..."
+                          value={academicQuery}
+                          onChange={(e) => setAcademicQuery(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              consultarApiExterna();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn-academic-search"
+                          onClick={() => consultarApiExterna()}
+                          disabled={searchingAcademic}
+                        >
+                          {searchingAcademic ? 'Buscando...' : '🔍 Consultar API'}
+                        </button>
+                      </div>
+                      {academicStatusMsg && (
+                        <div className={`academic-badge-status status-${academicStatusMsg.kind}`}>
+                          {academicStatusMsg.text}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="form-grid-3">
                     <div className="form-field">
                       <label>Tipo de Identidad *</label>
