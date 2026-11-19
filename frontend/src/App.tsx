@@ -4,7 +4,6 @@ import RequireAuth from './components/RequireAuth';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Graduados from './pages/Graduados';
-import Titulaciones from './pages/Titulaciones';
 import Procesos from './pages/Procesos';
 import Titulos from './pages/Titulos';
 import TituloDetalle from './pages/TituloDetalle';
@@ -24,7 +23,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/graduados" element={<Graduados />} />
-          <Route path="/titulaciones" element={<Titulaciones />} />
+          <Route path="/titulaciones" element={<Navigate to="/graduados" replace />} />
           <Route path="/procesos" element={<Procesos />} />
           <Route path="/titulos" element={<Titulos />} />
           <Route path="/titulos/:id" element={<TituloDetalle />} />

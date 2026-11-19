@@ -4,8 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 
 const links = [
   ['/dashboard', 'Dashboard'],
-  ['/graduados', 'Graduados'],
-  ['/titulaciones', 'Titulaciones'],
+  ['/graduados', 'Graduados y Títulos'],
   ['/procesos', 'Procesos'],
   ['/titulos', 'Títulos físicos'],
   ['/impresion', 'Impresión'],

@@ -1,27 +1,91 @@
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent } from 'react';
 import { api, type Page } from '../api/client';
-import { Alert, Loading, Pager } from '../components/ui';
+import { Alert, Loading, Pager, Badge, fecha } from '../components/ui';
 import { useAuth } from '../auth/AuthContext';
 import { errorMessage, useApi } from '../hooks/useApi';
-import type { Graduado } from '../api/types';
+import type { Graduado, Titulacion } from '../api/types';
 
 export default function Graduados() {
-  const { can } = useAuth();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [editingGraduado, setEditingGraduado] = useState<Graduado | null>(null);
-  const [msg, setMsg] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
-  const [page, setPage] = useState(1);
+  const { can, user } = useAuth();
+  const [selectedGraduado, setSelectedGraduado] = useState<Graduado | null>(null);
 
   // Filtros de búsqueda (Estilo SETEC)
   const [docFilter, setDocFilter] = useState('');
   const [nombresFilter, setNombresFilter] = useState('');
   const [apellidosFilter, setApellidosFilter] = useState('');
   const [queryUrl, setQueryUrl] = useState('/graduados?page=1');
+  const [page, setPage] = useState(1);
 
-  // Carga de lista
+  // Carga de lista de Graduados
   const { data, error, loading, reload } = useApi<Page<Graduado>>(queryUrl);
 
+  // Lista de Títulos del graduado seleccionado
+  const [titulaciones, setTitulaciones] = useState<Titulacion[]>([]);
+  const [loadingTitulaciones, setLoadingTitulaciones] = useState(false);
+  const [msg, setMsg] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
+
+  // Modal 1: Crear / Editar Graduado
+  const [modalGraduadoOpen, setModalGraduadoOpen] = useState(false);
+  const [stepGraduado, setStepGraduado] = useState<1 | 2 | 3>(1);
+  const [editingGraduado, setEditingGraduado] = useState<Graduado | null>(null);
+
+  const [formGraduado, setFormGraduado] = useState({
+    tipo_identidad: 'Cédula de Identidad Nicaragüense',
+    cedula: '',
+    carnet: '',
+    nombres: '',
+    apellidos: '',
+    nombre_completo: '',
+    sexo: 'Femenino',
+    pais: 'Nicaragua',
+    estado_civil: 'Soltero(a)',
+    etnia: 'Mestizo',
+    departamento_origen: 'León',
+    municipio_origen: 'León',
+    departamento_residencia: 'León',
+    municipio_residencia: 'León',
+    direccion_residencia: '',
+    email: '',
+    telefono: '',
+    linea_telefonica: 'Claro',
+    anio_bachillerato: '2020',
+    codigo_estudiante: '',
+    tipo_bachillerato: 'Regular',
+    turno_bachillerato: 'Matutino',
+    modalidad_bachillerato: 'Presencial',
+  });
+
+  // Modal 2: Crear / Editar Título (Titulaciones)
+  const [modalTituloOpen, setModalTituloOpen] = useState(false);
+  const [stepTitulo, setStepTitulo] = useState<1 | 2 | 3>(1);
+  const [editingTitulacion, setEditingTitulacion] = useState<Titulacion | null>(null);
+
+  const [formTitulo, setFormTitulo] = useState({
+    titulo_obtenido: '',
+    carrera: 'Ingeniería en Sistemas de Información',
+    anio_inicio_estudio: '2019',
+    anio_fin_estudio: '2023',
+    anio_graduacion: '2024',
+    registrado_no: '',
+    folio: '',
+    tomo_registro: '',
+    fecha_emision_titulo: new Date().toISOString().split('T')[0],
+    sede: 'Sede Central - León',
+    duracion_anios: '5 años',
+    numero_asignaturas: '54',
+    programa_especial: 'Ninguno',
+    forma_culminacion: 'Monografía',
+    numero_gaceta: '',
+    pagina_gaceta: '',
+    fecha_gaceta: '',
+    acceso_internet: false,
+    tipo_acceso_internet: 'Sin Especificar',
+    empresa_acceso_internet: 'Sin Especificar',
+    fecha_registro_setec: new Date().toISOString().split('T')[0],
+    registrador: user?.name ? `${user.name} (${user.role})` : 'Registrador Autorizado',
+  });
+
+  // Filtros
   const aplicarFiltros = (e?: FormEvent) => {
     if (e) e.preventDefault();
     setPage(1);
@@ -48,36 +112,36 @@ export default function Graduados() {
     setQueryUrl(`/graduados?${params.toString()}`);
   };
 
-  // Estado del formulario modal multi-paso
-  const [formData, setFormData] = useState({
-    tipo_identidad: 'Cédula de Identidad Nicaragüense',
-    cedula: '',
-    carnet: '',
-    nombres: '',
-    apellidos: '',
-    nombre_completo: '',
-    sexo: 'Femenino',
-    pais: 'Nicaragua',
-    estado_civil: 'Soltero(a)',
-    etnia: 'Mestizo',
-    departamento_origen: 'León',
-    municipio_origen: 'León',
-    departamento_residencia: 'León',
-    municipio_residencia: 'León',
-    direccion_residencia: '',
-    email: '',
-    telefono: '',
-    linea_telefonica: 'Claro',
-    anio_bachillerato: '2020',
-    codigo_estudiante: '',
-    tipo_bachillerato: 'Regular',
-    turno_bachillerato: 'Matutino',
-    modalidad_bachillerato: 'Presencial',
-  });
+  // Seleccionar Graduado para cargar sus Títulos
+  const seleccionarGraduado = async (g: Graduado) => {
+    setSelectedGraduado(g);
+    setLoadingTitulaciones(true);
+    try {
+      const res = await api<Page<Titulacion>>(`/titulaciones?graduado_id=${g.id}`);
+      setTitulaciones(res.data || []);
+    } catch (err) {
+      setMsg({ kind: 'error', text: 'Error al consultar títulos del graduado.' });
+    } finally {
+      setLoadingTitulaciones(false);
+    }
+  };
 
-  const abrirModalCrear = () => {
+  const reloadTitulaciones = async (graduadoId: number) => {
+    setLoadingTitulaciones(true);
+    try {
+      const res = await api<Page<Titulacion>>(`/titulaciones?graduado_id=${graduadoId}`);
+      setTitulaciones(res.data || []);
+    } catch (err) {
+      // Ignorar
+    } finally {
+      setLoadingTitulaciones(false);
+    }
+  };
+
+  // Acciones Graduado
+  const abrirModalCrearGraduado = () => {
     setEditingGraduado(null);
-    setFormData({
+    setFormGraduado({
       tipo_identidad: 'Cédula de Identidad Nicaragüense',
       cedula: '',
       carnet: '',
@@ -102,13 +166,13 @@ export default function Graduados() {
       turno_bachillerato: 'Matutino',
       modalidad_bachillerato: 'Presencial',
     });
-    setCurrentStep(1);
-    setModalOpen(true);
+    setStepGraduado(1);
+    setModalGraduadoOpen(true);
   };
 
-  const abrirModalEditar = (g: Graduado) => {
+  const abrirModalEditarGraduado = (g: Graduado) => {
     setEditingGraduado(g);
-    setFormData({
+    setFormGraduado({
       tipo_identidad: g.tipo_identidad || 'Cédula de Identidad Nicaragüense',
       cedula: g.cedula || '',
       carnet: g.carnet || '',
@@ -133,16 +197,15 @@ export default function Graduados() {
       turno_bachillerato: g.turno_bachillerato || 'Matutino',
       modalidad_bachillerato: g.modalidad_bachillerato || 'Presencial',
     });
-    setCurrentStep(1);
-    setModalOpen(true);
+    setStepGraduado(1);
+    setModalGraduadoOpen(true);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleGraduadoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormGraduado((prev) => ({
       ...prev,
       [name]: value,
-      // Actualizar automáticamente nombre completo si cambian nombres o apellidos
       nombre_completo:
         name === 'nombres'
           ? `${value} ${prev.apellidos}`.trim()
@@ -156,9 +219,9 @@ export default function Graduados() {
     if (e) e.preventDefault();
     try {
       const payload = {
-        ...formData,
+        ...formGraduado,
         nombre_completo:
-          formData.nombre_completo || `${formData.nombres} ${formData.apellidos}`.trim() || 'Sin Nombre',
+          formGraduado.nombre_completo || `${formGraduado.nombres} ${formGraduado.apellidos}`.trim() || 'Sin Nombre',
       };
 
       if (editingGraduado) {
@@ -168,7 +231,7 @@ export default function Graduados() {
         await api('/graduados', { method: 'POST', body: payload });
         setMsg({ kind: 'success', text: 'Graduado registrado correctamente en el sistema.' });
       }
-      setModalOpen(false);
+      setModalGraduadoOpen(false);
       reload();
     } catch (err) {
       setMsg({ kind: 'error', text: errorMessage(err) });
@@ -180,7 +243,119 @@ export default function Graduados() {
     try {
       await api(`/graduados/${g.id}`, { method: 'DELETE' });
       setMsg({ kind: 'success', text: 'Graduado eliminado.' });
+      if (selectedGraduado?.id === g.id) {
+        setSelectedGraduado(null);
+        setTitulaciones([]);
+      }
       reload();
+    } catch (err) {
+      setMsg({ kind: 'error', text: errorMessage(err) });
+    }
+  };
+
+  // Acciones Títulos
+  const abrirModalCrearTitulo = () => {
+    if (!selectedGraduado) return;
+    setEditingTitulacion(null);
+    setFormTitulo({
+      titulo_obtenido: '',
+      carrera: 'Ingeniería en Sistemas de Información',
+      anio_inicio_estudio: '2019',
+      anio_fin_estudio: '2023',
+      anio_graduacion: '2024',
+      registrado_no: '',
+      folio: '',
+      tomo_registro: '',
+      fecha_emision_titulo: new Date().toISOString().split('T')[0],
+      sede: 'Sede Central - León',
+      duracion_anios: '5 años',
+      numero_asignaturas: '54',
+      programa_especial: 'Ninguno',
+      forma_culminacion: 'Monografía',
+      numero_gaceta: '',
+      pagina_gaceta: '',
+      fecha_gaceta: '',
+      acceso_internet: false,
+      tipo_acceso_internet: 'Sin Especificar',
+      empresa_acceso_internet: 'Sin Especificar',
+      fecha_registro_setec: new Date().toISOString().split('T')[0],
+      registrador: user?.name ? `${user.name} (${user.role})` : 'Registrador Autorizado',
+    });
+    setStepTitulo(1);
+    setModalTituloOpen(true);
+  };
+
+  const abrirModalEditarTitulo = (t: Titulacion) => {
+    setEditingTitulacion(t);
+    setFormTitulo({
+      titulo_obtenido: t.titulo_obtenido || '',
+      carrera: t.carrera || '',
+      anio_inicio_estudio: t.anio_inicio_estudio || '2019',
+      anio_fin_estudio: t.anio_fin_estudio || '2023',
+      anio_graduacion: t.anio_graduacion || '2024',
+      registrado_no: t.registrado_no || '',
+      folio: t.folio || '',
+      tomo_registro: t.tomo_registro || '',
+      fecha_emision_titulo: t.fecha_emision_titulo?.split('T')[0] || '',
+      sede: t.sede || 'Sede Central - León',
+      duracion_anios: t.duracion_anios || '5 años',
+      numero_asignaturas: t.numero_asignaturas || '54',
+      programa_especial: t.programa_especial || 'Ninguno',
+      forma_culminacion: t.forma_culminacion || 'Monografía',
+      numero_gaceta: t.numero_gaceta || '',
+      pagina_gaceta: t.pagina_gaceta || '',
+      fecha_gaceta: t.fecha_gaceta?.split('T')[0] || '',
+      acceso_internet: !!t.acceso_internet,
+      tipo_acceso_internet: t.tipo_acceso_internet || 'Sin Especificar',
+      empresa_acceso_internet: t.empresa_acceso_internet || 'Sin Especificar',
+      fecha_registro_setec: t.fecha_registro_setec?.split('T')[0] || '',
+      registrador: t.registrador || user?.name || '',
+    });
+    setStepTitulo(1);
+    setModalTituloOpen(true);
+  };
+
+  const handleTituloChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormTitulo((prev) => ({ ...prev, [name]: checked }));
+    } else {
+      setFormTitulo((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const guardarTitulo = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
+    if (!selectedGraduado) return;
+    try {
+      const payload = {
+        ...formTitulo,
+        graduado_id: selectedGraduado.id,
+        titulo_obtenido: formTitulo.titulo_obtenido || formTitulo.carrera,
+        fecha_titulacion: formTitulo.fecha_emision_titulo,
+      };
+
+      if (editingTitulacion) {
+        await api(`/titulaciones/${editingTitulacion.id}`, { method: 'PUT', body: payload });
+        setMsg({ kind: 'success', text: 'Título actualizado exitosamente.' });
+      } else {
+        await api('/titulaciones', { method: 'POST', body: payload });
+        setMsg({ kind: 'success', text: 'Nuevo título registrado exitosamente al graduado.' });
+      }
+      setModalTituloOpen(false);
+      reloadTitulaciones(selectedGraduado.id);
+    } catch (err) {
+      setMsg({ kind: 'error', text: errorMessage(err) });
+    }
+  };
+
+  const eliminarTitulo = async (t: Titulacion) => {
+    if (!confirm(`¿Eliminar la titulación de "${t.titulo_obtenido || t.carrera}"?`)) return;
+    try {
+      await api(`/titulaciones/${t.id}`, { method: 'DELETE' });
+      setMsg({ kind: 'success', text: 'Titulación eliminada.' });
+      if (selectedGraduado) reloadTitulaciones(selectedGraduado.id);
     } catch (err) {
       setMsg({ kind: 'error', text: errorMessage(err) });
     }
@@ -188,11 +363,11 @@ export default function Graduados() {
 
   return (
     <div className="graduados-container">
-      {/* Barra superior estilo SETEC */}
+      {/* BARRA SUPERIOR ESTILO SETEC */}
       <div className="setec-header-bar">
-        <h2>Graduados</h2>
+        <h2>Graduados y Titulaciones</h2>
         {can('admin', 'operador') && (
-          <button type="button" className="setec-btn-primary" onClick={abrirModalCrear}>
+          <button type="button" className="setec-btn-primary" onClick={abrirModalCrearGraduado}>
             + Registrar Nuevo Graduado
           </button>
         )}
@@ -200,7 +375,7 @@ export default function Graduados() {
 
       {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
 
-      {/* Tarjeta de Filtros (Filtrar Registros) */}
+      {/* FILTROS DE BÚSQUEDA */}
       <div className="card setec-filter-card">
         <div className="filter-title">
           <span>🍸</span> <strong>Filtrar Registros</strong>
@@ -208,7 +383,6 @@ export default function Graduados() {
 
         <form onSubmit={aplicarFiltros}>
           <div className="filter-grid">
-
             <div className="filter-group">
               <label>Documento de Identidad</label>
               <input
@@ -251,7 +425,7 @@ export default function Graduados() {
         </form>
       </div>
 
-      {/* Tabla de Resultados SETEC */}
+      {/* TABLA PRINCIPAL DE GRADUADOS */}
       {error && <Alert>{error}</Alert>}
       {loading && !data ? (
         <Loading />
@@ -277,60 +451,73 @@ export default function Graduados() {
                       </td>
                     </tr>
                   ) : (
-                    data.data.map((g, index) => (
-                      <tr key={g.id}>
-                        <td className="muted">{(data.current_page - 1) * 15 + index + 1}</td>
-                        <td style={{ fontWeight: 600, color: '#1e293b' }}>
-                          {g.nombre_completo || `${g.nombres ?? ''} ${g.apellidos ?? ''}`}
-                        </td>
-                        <td>{g.sexo || 'Femenino'}</td>
-                        <td>
-                          {g.cedula ? (
-                            <span>Cédula de Identidad Nicaragüense : <b>{g.cedula}</b></span>
-                          ) : g.carnet ? (
-                            <span>Carnet Universitario : <b>{g.carnet}</b></span>
-                          ) : (
-                            <span className="muted">Sin documento registrado</span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="action-buttons-group">
-                            {can('admin', 'operador') && (
+                    data.data.map((g, index) => {
+                      const isSelected = selectedGraduado?.id === g.id;
+                      return (
+                        <tr
+                          key={g.id}
+                          className={isSelected ? 'row-selected' : ''}
+                          onClick={() => seleccionarGraduado(g)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <td className="muted">{(data.current_page - 1) * 15 + index + 1}</td>
+                          <td style={{ fontWeight: 700, color: '#0f172a' }}>
+                            {g.nombre_completo || `${g.nombres ?? ''} ${g.apellidos ?? ''}`}
+                          </td>
+                          <td>{g.sexo || 'Femenino'}</td>
+                          <td>
+                            {g.cedula ? (
+                              <span>Cédula de Identidad Nicaragüense : <b>{g.cedula}</b></span>
+                            ) : g.carnet ? (
+                              <span>Carnet : <b>{g.carnet}</b></span>
+                            ) : (
+                              <span className="muted">Sin documento</span>
+                            )}
+                          </td>
+                          <td>
+                            <div className="action-buttons-group">
+                              {can('admin', 'operador') && (
+                                <button
+                                  type="button"
+                                  className="icon-btn btn-edit"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    abrirModalEditarGraduado(g);
+                                  }}
+                                  title="Editar datos del graduado"
+                                >
+                                  ✏️
+                                </button>
+                              )}
                               <button
                                 type="button"
-                                className="icon-btn btn-edit"
-                                onClick={() => abrirModalEditar(g)}
-                                title="Editar datos"
+                                className={`icon-btn ${isSelected ? 'btn-active-list' : 'btn-select-list'}`}
+                                title="Ver Títulos Registrados"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  seleccionarGraduado(g);
+                                }}
                               >
-                                ✏️
+                                📋
                               </button>
-                            )}
-                            <button
-                              type="button"
-                              className="icon-btn btn-info"
-                              onClick={() =>
-                                alert(
-                                  `Graduado: ${g.nombre_completo}\nEmail: ${g.email ?? '—'}\nTeléfono: ${g.telefono ?? '—'}\nOrigen: ${g.departamento_origen ?? '—'}`
-                                )
-                              }
-                              title="Información detallada"
-                            >
-                              ℹ️
-                            </button>
-                            {can('admin') && (
-                              <button
-                                type="button"
-                                className="icon-btn btn-delete"
-                                onClick={() => eliminarGraduado(g)}
-                                title="Eliminar graduado"
-                              >
-                                🗑️
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              {can('admin') && (
+                                <button
+                                  type="button"
+                                  className="icon-btn btn-delete"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    eliminarGraduado(g);
+                                  }}
+                                  title="Eliminar graduado"
+                                >
+                                  🗑️
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -340,138 +527,188 @@ export default function Graduados() {
         )
       )}
 
-      {/* === MODAL MULTI-PASO (ESTILO SETEC / CREAR GRADUADO) === */}
-      {modalOpen && (
+      {/* SECCIÓN INFERIOR: TÍTULOS REGISTRADOS DEL GRADUADO SELECCIONADO */}
+      {selectedGraduado ? (
+        <div className="titulos-registrados-card">
+          <div className="titulos-header-bar">
+            <h3>Títulos Registrados</h3>
+            {can('admin', 'operador') && (
+              <button type="button" className="setec-btn-primary" onClick={abrirModalCrearTitulo}>
+                + Registrar Nuevo Título
+              </button>
+            )}
+          </div>
+
+          {/* Ficha Resumen del Graduado Seleccionado */}
+          <div className="graduado-selected-summary">
+            <div className="summary-field">
+              <label>Tipo de Identidad</label>
+              <input type="text" readOnly value={selectedGraduado.tipo_identidad || 'Cédula de Identidad Nicaragüense'} />
+            </div>
+            <div className="summary-field">
+              <label>Documento de Identidad</label>
+              <input type="text" readOnly value={selectedGraduado.cedula || selectedGraduado.carnet || '—'} />
+            </div>
+            <div className="summary-field">
+              <label>Sexo</label>
+              <input type="text" readOnly value={selectedGraduado.sexo || 'Femenino'} />
+            </div>
+            <div className="summary-field col-span-2">
+              <label>Nombres</label>
+              <input type="text" readOnly value={selectedGraduado.nombres || selectedGraduado.nombre_completo.split(' ')[0]} />
+            </div>
+            <div className="summary-field col-span-2">
+              <label>Apellidos</label>
+              <input type="text" readOnly value={selectedGraduado.apellidos || selectedGraduado.nombre_completo.split(' ').slice(1).join(' ')} />
+            </div>
+          </div>
+
+          {/* Listado de Títulos */}
+          {loadingTitulaciones ? (
+            <Loading />
+          ) : titulaciones.length === 0 ? (
+            <div className="warning-empty-banner">
+              ⚠️ ¡No existen títulos registrados para este graduado! Haga clic en <b>"+ Registrar Nuevo Título"</b> para agregar uno.
+            </div>
+          ) : (
+            <div className="table-container" style={{ marginTop: '1rem' }}>
+              <table className="setec-table">
+                <thead>
+                  <tr>
+                    <th>Título Obtenido / Carrera</th>
+                    <th>N.º Registro</th>
+                    <th>Folio / Tomo</th>
+                    <th>F. Emisión</th>
+                    <th>Estado Físico</th>
+                    <th style={{ textAlign: 'right' }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {titulaciones.map((t) => (
+                    <tr key={t.id}>
+                      <td style={{ fontWeight: 600 }}>
+                        {t.titulo_obtenido || t.carrera}
+                        <div className="muted" style={{ fontSize: '0.8rem' }}>{t.carrera} ({t.sede ?? 'León'})</div>
+                      </td>
+                      <td>{t.registrado_no || '—'}</td>
+                      <td>{t.folio && t.tomo_registro ? `Folio: ${t.folio} / Tomo: ${t.tomo_registro}` : '—'}</td>
+                      <td>{fecha(t.fecha_emision_titulo || t.fecha_titulacion)}</td>
+                      <td>
+                        {t.titulo_fisico ? (
+                          <Badge value={t.titulo_fisico.ubicacion_actual} />
+                        ) : (
+                          <span className="badge gray">Sin emitir</span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="action-buttons-group">
+                          {can('admin', 'operador') && (
+                            <button
+                              type="button"
+                              className="icon-btn btn-edit"
+                              onClick={() => abrirModalEditarTitulo(t)}
+                              title="Editar título"
+                            >
+                              ✏️
+                            </button>
+                          )}
+                          {can('admin') && (
+                            <button
+                              type="button"
+                              className="icon-btn btn-delete"
+                              onClick={() => eliminarTitulo(t)}
+                              title="Eliminar título"
+                            >
+                              🗑️
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="info-select-graduado">
+          💡 Seleccione un graduado de la tabla para visualizar sus títulos universitarios o registrar uno nuevo.
+        </div>
+      )}
+
+      {/* === MODAL MULTI-PASO: CREAR / EDITAR GRADUADO === */}
+      {modalGraduadoOpen && (
         <div className="setec-modal-backdrop">
           <div className="setec-modal" role="dialog" aria-labelledby="modal-graduado-title">
             <div className="modal-top-bar">
               <h3 id="modal-graduado-title">{editingGraduado ? 'Editar Graduado' : 'Crear Graduado'}</h3>
-              <button
-                type="button"
-                className="close-x-btn"
-                onClick={() => setModalOpen(false)}
-                aria-label="Cerrar modal"
-              >
-                ✕
-              </button>
+              <button type="button" className="close-x-btn" onClick={() => setModalGraduadoOpen(false)}>✕</button>
             </div>
 
-            {/* Stepper / Pestañas de Pasos estilo SETEC */}
             <div className="stepper-tabs">
-              <div
-                className={`step-tab ${currentStep === 1 ? 'active' : ''}`}
-                onClick={() => setCurrentStep(1)}
-              >
+              <div className={`step-tab ${stepGraduado === 1 ? 'active' : ''}`} onClick={() => setStepGraduado(1)}>
                 <span>👤 Datos Personales</span>
               </div>
-              <div
-                className={`step-tab ${currentStep === 2 ? 'active' : ''}`}
-                onClick={() => setCurrentStep(2)}
-              >
+              <div className={`step-tab ${stepGraduado === 2 ? 'active' : ''}`} onClick={() => setStepGraduado(2)}>
                 <span>@ Datos de Contacto</span>
               </div>
-              <div
-                className={`step-tab ${currentStep === 3 ? 'active' : ''}`}
-                onClick={() => setCurrentStep(3)}
-              >
+              <div className={`step-tab ${stepGraduado === 3 ? 'active' : ''}`} onClick={() => setStepGraduado(3)}>
                 <span>🎓 Datos Académicos</span>
               </div>
             </div>
 
             <div className="modal-content-body">
-              {/* PASO 1: DATOS PERSONALES */}
-              {currentStep === 1 && (
+              {stepGraduado === 1 && (
                 <div className="step-content">
                   <div className="form-grid-3">
                     <div className="form-field">
                       <label>Tipo de Identidad *</label>
-                      <select
-                        name="tipo_identidad"
-                        value={formData.tipo_identidad}
-                        onChange={handleChange}
-                      >
-                        <option value="Cédula de Identidad Nicaragüense">
-                          Cédula de Identidad Nicaragüense
-                        </option>
+                      <select name="tipo_identidad" value={formGraduado.tipo_identidad} onChange={handleGraduadoChange}>
+                        <option value="Cédula de Identidad Nicaragüense">Cédula de Identidad Nicaragüense</option>
                         <option value="Pasaporte">Pasaporte</option>
                         <option value="Carné de Residente">Carné de Residente</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Documento de Identidad *</label>
-                      <input
-                        type="text"
-                        name="cedula"
-                        placeholder="Ej. 001-010190-0001A"
-                        value={formData.cedula}
-                        onChange={handleChange}
-                        required
-                      />
+                      <input type="text" name="cedula" placeholder="Ej. 001-010190-0001A" value={formGraduado.cedula} onChange={handleGraduadoChange} required />
                     </div>
-
                     <div className="form-field">
                       <label>Sexo *</label>
-                      <select name="sexo" value={formData.sexo} onChange={handleChange}>
+                      <select name="sexo" value={formGraduado.sexo} onChange={handleGraduadoChange}>
                         <option value="Femenino">Femenino</option>
                         <option value="Masculino">Masculino</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Nombres *</label>
-                      <input
-                        type="text"
-                        name="nombres"
-                        placeholder="Nombres del Titulado"
-                        value={formData.nombres}
-                        onChange={handleChange}
-                        required
-                      />
+                      <input type="text" name="nombres" placeholder="Nombres del Titulado" value={formGraduado.nombres} onChange={handleGraduadoChange} required />
                     </div>
-
                     <div className="form-field">
                       <label>Apellidos *</label>
-                      <input
-                        type="text"
-                        name="apellidos"
-                        placeholder="Apellidos del Titulado"
-                        value={formData.apellidos}
-                        onChange={handleChange}
-                        required
-                      />
+                      <input type="text" name="apellidos" placeholder="Apellidos del Titulado" value={formGraduado.apellidos} onChange={handleGraduadoChange} required />
                     </div>
-
                     <div className="form-field">
                       <label>País *</label>
-                      <select name="pais" value={formData.pais} onChange={handleChange}>
+                      <select name="pais" value={formGraduado.pais} onChange={handleGraduadoChange}>
                         <option value="Nicaragua">Nicaragua</option>
                         <option value="Costa Rica">Costa Rica</option>
                         <option value="Honduras">Honduras</option>
                         <option value="Otro">Otro</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Estado Civil *</label>
-                      <select
-                        name="estado_civil"
-                        value={formData.estado_civil}
-                        onChange={handleChange}
-                      >
+                      <select name="estado_civil" value={formGraduado.estado_civil} onChange={handleGraduadoChange}>
                         <option value="Soltero(a)">Soltero(a)</option>
                         <option value="Casado(a)">Casado(a)</option>
                         <option value="Unión de Hecho">Unión de Hecho</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Departamento Origen *</label>
-                      <select
-                        name="departamento_origen"
-                        value={formData.departamento_origen}
-                        onChange={handleChange}
-                      >
+                      <select name="departamento_origen" value={formGraduado.departamento_origen} onChange={handleGraduadoChange}>
                         <option value="León">León</option>
                         <option value="Managua">Managua</option>
                         <option value="Chinandega">Chinandega</option>
@@ -479,94 +716,59 @@ export default function Graduados() {
                         <option value="Estelí">Estelí</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Municipio Origen *</label>
-                      <select
-                        name="municipio_origen"
-                        value={formData.municipio_origen}
-                        onChange={handleChange}
-                      >
+                      <select name="municipio_origen" value={formGraduado.municipio_origen} onChange={handleGraduadoChange}>
                         <option value="León">León</option>
                         <option value="Nagarote">Nagarote</option>
                         <option value="La Paz Centro">La Paz Centro</option>
                         <option value="Malpaisillo">Malpaisillo</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Etnia *</label>
-                      <select name="etnia" value={formData.etnia} onChange={handleChange}>
+                      <select name="etnia" value={formGraduado.etnia} onChange={handleGraduadoChange}>
                         <option value="Mestizo">Mestizo</option>
                         <option value="Miskito">Miskito</option>
                         <option value="Creole">Creole</option>
                         <option value="Chorotega">Chorotega</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Departamento Residencia *</label>
-                      <select
-                        name="departamento_residencia"
-                        value={formData.departamento_residencia}
-                        onChange={handleChange}
-                      >
+                      <select name="departamento_residencia" value={formGraduado.departamento_residencia} onChange={handleGraduadoChange}>
                         <option value="León">León</option>
                         <option value="Managua">Managua</option>
                         <option value="Chinandega">Chinandega</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Municipio Residencia *</label>
-                      <select
-                        name="municipio_residencia"
-                        value={formData.municipio_residencia}
-                        onChange={handleChange}
-                      >
+                      <select name="municipio_residencia" value={formGraduado.municipio_residencia} onChange={handleGraduadoChange}>
                         <option value="León">León</option>
                         <option value="Nagarote">Nagarote</option>
                         <option value="La Paz Centro">La Paz Centro</option>
                       </select>
                     </div>
-
                     <div className="form-field col-span-3">
                       <label>Dirección de Residencia *</label>
-                      <textarea
-                        name="direccion_residencia"
-                        rows={2}
-                        placeholder="Dirección de Residencia/Domicilio del Titulado"
-                        value={formData.direccion_residencia}
-                        onChange={handleChange}
-                      ></textarea>
+                      <textarea name="direccion_residencia" rows={2} placeholder="Dirección de Residencia del Titulado" value={formGraduado.direccion_residencia} onChange={handleGraduadoChange}></textarea>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* PASO 2: DATOS DE CONTACTO */}
-              {currentStep === 2 && (
+              {stepGraduado === 2 && (
                 <div className="step-content">
                   <div className="form-field" style={{ marginBottom: '1.5rem' }}>
                     <label>Correo Electrónico *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="alguien@ejemplo.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
+                    <input type="email" name="email" placeholder="alguien@ejemplo.com" value={formGraduado.email} onChange={handleGraduadoChange} required />
                   </div>
-
                   <div className="setec-subbox">
                     <div className="subbox-header">
                       <h4>📞 Teléfonos del Titulado</h4>
-                      <button type="button" className="btn-add-phone" onClick={() => {}}>
-                        + Agregar Teléfono
-                      </button>
+                      <button type="button" className="btn-add-phone">+ Agregar Teléfono</button>
                     </div>
-
                     <table className="sub-table">
                       <thead>
                         <tr>
@@ -580,33 +782,17 @@ export default function Graduados() {
                         <tr>
                           <td>1</td>
                           <td>
-                            <select
-                              name="linea_telefonica"
-                              value={formData.linea_telefonica}
-                              onChange={handleChange}
-                            >
+                            <select name="linea_telefonica" value={formGraduado.linea_telefonica} onChange={handleGraduadoChange}>
                               <option value="Claro">Claro</option>
                               <option value="Tigo">Tigo</option>
                               <option value="Convencional">Convencional</option>
                             </select>
                           </td>
                           <td>
-                            <input
-                              type="text"
-                              name="telefono"
-                              placeholder="0000-0000"
-                              value={formData.telefono}
-                              onChange={handleChange}
-                            />
+                            <input type="text" name="telefono" placeholder="0000-0000" value={formGraduado.telefono} onChange={handleGraduadoChange} />
                           </td>
                           <td style={{ textAlign: 'center' }}>
-                            <button
-                              type="button"
-                              className="btn-trash"
-                              onClick={() => setFormData((p) => ({ ...p, telefono: '' }))}
-                            >
-                              🗑️
-                            </button>
+                            <button type="button" className="btn-trash" onClick={() => setFormGraduado((p) => ({ ...p, telefono: '' }))}>🗑️</button>
                           </td>
                         </tr>
                       </tbody>
@@ -615,66 +801,36 @@ export default function Graduados() {
                 </div>
               )}
 
-              {/* PASO 3: DATOS ACADÉMICOS */}
-              {currentStep === 3 && (
+              {stepGraduado === 3 && (
                 <div className="step-content">
                   <div className="form-grid-3">
                     <div className="form-field">
                       <label>Año de Bachillerato *</label>
-                      <input
-                        type="text"
-                        name="anio_bachillerato"
-                        placeholder="Ej. 2018"
-                        value={formData.anio_bachillerato}
-                        onChange={handleChange}
-                      />
+                      <input type="text" name="anio_bachillerato" placeholder="Ej. 2018" value={formGraduado.anio_bachillerato} onChange={handleGraduadoChange} />
                     </div>
-
                     <div className="form-field">
                       <label>Código de Estudiante / Carnet *</label>
-                      <input
-                        type="text"
-                        name="carnet"
-                        placeholder="Ej. 22-01928-0"
-                        value={formData.carnet}
-                        onChange={handleChange}
-                        required
-                      />
+                      <input type="text" name="carnet" placeholder="Ej. 22-01928-0" value={formGraduado.carnet} onChange={handleGraduadoChange} required />
                     </div>
-
                     <div className="form-field">
                       <label>Tipo de Bachillerato *</label>
-                      <select
-                        name="tipo_bachillerato"
-                        value={formData.tipo_bachillerato}
-                        onChange={handleChange}
-                      >
+                      <select name="tipo_bachillerato" value={formGraduado.tipo_bachillerato} onChange={handleGraduadoChange}>
                         <option value="Regular">Regular</option>
                         <option value="Técnico">Técnico</option>
                         <option value="Por Madurez">Por Madurez</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Turno del Bachillerato *</label>
-                      <select
-                        name="turno_bachillerato"
-                        value={formData.turno_bachillerato}
-                        onChange={handleChange}
-                      >
+                      <select name="turno_bachillerato" value={formGraduado.turno_bachillerato} onChange={handleGraduadoChange}>
                         <option value="Matutino">Matutino</option>
                         <option value="Vespertino">Vespertino</option>
                         <option value="Sabatino">Sabatino</option>
                       </select>
                     </div>
-
                     <div className="form-field">
                       <label>Modalidad del Bachillerato *</label>
-                      <select
-                        name="modalidad_bachillerato"
-                        value={formData.modalidad_bachillerato}
-                        onChange={handleChange}
-                      >
+                      <select name="modalidad_bachillerato" value={formGraduado.modalidad_bachillerato} onChange={handleGraduadoChange}>
                         <option value="Presencial">Presencial</option>
                         <option value="A Distancia">A Distancia</option>
                         <option value="Virtual">Virtual</option>
@@ -685,42 +841,221 @@ export default function Graduados() {
               )}
             </div>
 
-            {/* Botones de navegación inferior estilo SETEC */}
             <div className="modal-footer-nav">
               <div className="nav-buttons-left">
-                {currentStep > 1 && (
-                  <button
-                    type="button"
-                    className="btn-stepper btn-prev"
-                    onClick={() => setCurrentStep((p) => (p - 1) as 1 | 2 | 3)}
-                  >
-                    Anterior
-                  </button>
+                {stepGraduado > 1 && (
+                  <button type="button" className="btn-stepper btn-prev" onClick={() => setStepGraduado((p) => (p - 1) as 1 | 2 | 3)}>Anterior</button>
                 )}
-                {currentStep < 3 ? (
-                  <button
-                    type="button"
-                    className="btn-stepper btn-next"
-                    onClick={() => setCurrentStep((p) => (p + 1) as 1 | 2 | 3)}
-                  >
-                    Siguiente
-                  </button>
+                {stepGraduado < 3 ? (
+                  <button type="button" className="btn-stepper btn-next" onClick={() => setStepGraduado((p) => (p + 1) as 1 | 2 | 3)}>Siguiente</button>
                 ) : (
-                  <button
-                    type="button"
-                    className="btn-stepper btn-save"
-                    onClick={() => guardarGraduado()}
-                  >
-                    💾 Guardar
-                  </button>
+                  <button type="button" className="btn-stepper btn-save" onClick={() => guardarGraduado()}>💾 Guardar Graduado</button>
                 )}
-                <button
-                  type="button"
-                  className="btn-stepper btn-close"
-                  onClick={() => setModalOpen(false)}
-                >
-                  ✕ Cerrar
-                </button>
+                <button type="button" className="btn-stepper btn-close" onClick={() => setModalGraduadoOpen(false)}>✕ Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* === MODAL MULTI-PASO: CREAR / EDITAR TÍTULO === */}
+      {modalTituloOpen && (
+        <div className="setec-modal-backdrop">
+          <div className="setec-modal" role="dialog" aria-labelledby="modal-titulo-title">
+            <div className="modal-top-bar">
+              <h3 id="modal-titulo-title">{editingTitulacion ? 'Editar Título' : 'Crear Título'}</h3>
+              <button type="button" className="close-x-btn" onClick={() => setModalTituloOpen(false)}>✕</button>
+            </div>
+
+            <div className="stepper-tabs">
+              <div className={`step-tab ${stepTitulo === 1 ? 'active' : ''}`} onClick={() => setStepTitulo(1)}>
+                <span>🎓 Datos del Título</span>
+              </div>
+              <div className={`step-tab ${stepTitulo === 2 ? 'active' : ''}`} onClick={() => setStepTitulo(2)}>
+                <span>ℹ️ Datos Adicionales</span>
+              </div>
+              <div className={`step-tab ${stepTitulo === 3 ? 'active' : ''}`} onClick={() => setStepTitulo(3)}>
+                <span>🖼️ Evidencias del Trámite</span>
+              </div>
+            </div>
+
+            <div className="modal-content-body">
+              {stepTitulo === 1 && (
+                <div className="step-content">
+                  <div className="form-grid-3">
+                    <div className="form-field col-span-3">
+                      <label>Título Obtenido *</label>
+                      <input type="text" name="titulo_obtenido" placeholder="Descripción del Título Obtenido" value={formTitulo.titulo_obtenido} onChange={handleTituloChange} required />
+                    </div>
+                    <div className="form-field">
+                      <label>Año Inicio de Estudio *</label>
+                      <input type="text" name="anio_inicio_estudio" placeholder="Ej. 2019" value={formTitulo.anio_inicio_estudio} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>Año Fin de Estudio *</label>
+                      <input type="text" name="anio_fin_estudio" placeholder="Ej. 2023" value={formTitulo.anio_fin_estudio} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>Año de Graduación *</label>
+                      <input type="text" name="anio_graduacion" placeholder="Ej. 2024" value={formTitulo.anio_graduacion} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>Registrado No. *</label>
+                      <input type="text" name="registrado_no" placeholder="Ej. 10294" value={formTitulo.registrado_no} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>Folio *</label>
+                      <input type="text" name="folio" placeholder="Ej. 45" value={formTitulo.folio} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>Tomo del Registro del Título *</label>
+                      <input type="text" name="tomo_registro" placeholder="Ej. III" value={formTitulo.tomo_registro} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>F. Emisión del Título *</label>
+                      <input type="date" name="fecha_emision_titulo" value={formTitulo.fecha_emision_titulo} onChange={handleTituloChange} required />
+                    </div>
+                    <div className="form-field col-span-2">
+                      <label>Sede *</label>
+                      <select name="sede" value={formTitulo.sede} onChange={handleTituloChange}>
+                        <option value="Sede Central - León">Sede Central - León</option>
+                        <option value="Sede Somoto">Sede Somoto</option>
+                        <option value="Sede Jinotega">Sede Jinotega</option>
+                      </select>
+                    </div>
+                    <div className="form-field col-span-3">
+                      <label>Carrera / Maestría / Especialidad *</label>
+                      <input type="text" name="carrera" value={formTitulo.carrera} onChange={handleTituloChange} required />
+                    </div>
+                    <div className="form-field">
+                      <label>Duración de la Carrera en años *</label>
+                      <input type="text" name="duracion_anios" placeholder="Ej. 5 años" value={formTitulo.duracion_anios} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>Número de Asignaturas *</label>
+                      <input type="text" name="numero_asignaturas" placeholder="Ej. 54" value={formTitulo.numero_asignaturas} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>Programa Especial *</label>
+                      <select name="programa_especial" value={formTitulo.programa_especial} onChange={handleTituloChange}>
+                        <option value="Ninguno">Ninguno</option>
+                        <option value="Universidad en el Campo">Universidad en el Campo</option>
+                        <option value="Profesionalización">Profesionalización</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {stepTitulo === 2 && (
+                <div className="step-content">
+                  <div className="form-grid-3">
+                    <div className="form-field col-span-3">
+                      <label>Forma Culminación Estudio *</label>
+                      <select name="forma_culminacion" value={formTitulo.forma_culminacion} onChange={handleTituloChange}>
+                        <option value="Monografía">Monografía</option>
+                        <option value="Examen de Grado">Examen de Grado</option>
+                        <option value="Curso de Graduación">Curso de Graduación</option>
+                        <option value="Práctica Profesional">Práctica Profesional</option>
+                      </select>
+                    </div>
+                    <div className="form-field">
+                      <label>Número de LA GACETA *</label>
+                      <input type="text" name="numero_gaceta" placeholder="Ej. 182" value={formTitulo.numero_gaceta} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>Página LA GACETA *</label>
+                      <input type="text" name="pagina_gaceta" placeholder="Ej. 4510" value={formTitulo.pagina_gaceta} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field">
+                      <label>F. de LA GACETA *</label>
+                      <input type="date" name="fecha_gaceta" value={formTitulo.fecha_gaceta} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field" style={{ justifyContent: 'center' }}>
+                      <label>Acceso a Internet *</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
+                        <input type="checkbox" name="acceso_internet" checked={formTitulo.acceso_internet} onChange={handleTituloChange} style={{ width: 'auto', minHeight: 'auto' }} />
+                        <span>{formTitulo.acceso_internet ? 'Sí' : 'No'}</span>
+                      </div>
+                    </div>
+                    <div className="form-field">
+                      <label>Tipo Acceso a Internet *</label>
+                      <select name="tipo_acceso_internet" value={formTitulo.tipo_acceso_internet} onChange={handleTituloChange}>
+                        <option value="Sin Especificar">Sin Especificar</option>
+                        <option value="Fibra Óptica / Cable">Fibra Óptica / Cable</option>
+                        <option value="Móvil / Datos">Móvil / Datos</option>
+                      </select>
+                    </div>
+                    <div className="form-field">
+                      <label>Empresa Acceso a Internet *</label>
+                      <select name="empresa_acceso_internet" value={formTitulo.empresa_acceso_internet} onChange={handleTituloChange}>
+                        <option value="Sin Especificar">Sin Especificar</option>
+                        <option value="Claro">Claro</option>
+                        <option value="Tigo">Tigo</option>
+                        <option value="IBW">IBW</option>
+                      </select>
+                    </div>
+                    <div className="form-field">
+                      <label>Fecha de Registro *</label>
+                      <input type="date" name="fecha_registro_setec" value={formTitulo.fecha_registro_setec} onChange={handleTituloChange} />
+                    </div>
+                    <div className="form-field col-span-2">
+                      <label>Registrador *</label>
+                      <input type="text" name="registrador" disabled value={formTitulo.registrador} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {stepTitulo === 3 && (
+                <div className="step-content">
+                  <table className="setec-table" style={{ border: '1px solid #e2e8f0' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40px' }}>#</th>
+                        <th>Requisito</th>
+                        <th>Nombre del Documento</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        'Cédula de Identidad (Requisito General)',
+                        'Diploma de Bachiller (Solo Pregrado y Grado)',
+                        'Certificado de Notas (Requisito General)',
+                        'Plan de Estudio (Requisito General)',
+                        'Título Otorgado (Requisito General)',
+                        'Título de Grado (Solo Posgrado)',
+                        'Acta de Defensa de Culminación de Estudio (Requisito General)',
+                        'Página(s) de La Gaceta (donde aparezca el nombre del titulado) (Requisito General)',
+                      ].map((req, i) => (
+                        <tr key={i}>
+                          <td>{i + 1}</td>
+                          <td>
+                            <span style={{ color: '#dc2626', marginRight: '4px' }}>⊗</span>
+                            {req}
+                          </td>
+                          <td>
+                            <input type="file" style={{ fontSize: '0.8rem', padding: '0.2rem' }} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer-nav">
+              <div className="nav-buttons-left">
+                {stepTitulo > 1 && (
+                  <button type="button" className="btn-stepper btn-prev" onClick={() => setStepTitulo((p) => (p - 1) as 1 | 2 | 3)}>Anterior</button>
+                )}
+                {stepTitulo < 3 ? (
+                  <button type="button" className="btn-stepper btn-next" onClick={() => setStepTitulo((p) => (p + 1) as 1 | 2 | 3)}>Siguiente</button>
+                ) : (
+                  <button type="button" className="btn-stepper btn-save" onClick={() => guardarTitulo()}>💾 Guardar Título</button>
+                )}
+                <button type="button" className="btn-stepper btn-close" onClick={() => setModalTituloOpen(false)}>✕ Cerrar</button>
               </div>
             </div>
           </div>
