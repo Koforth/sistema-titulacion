@@ -18,9 +18,21 @@
   line-height: 1.5;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ISO 9241-11 Accesibilidad: Enlace directo al contenido principal */
@@ -56,6 +68,14 @@ a {
 
 a:hover {
   color: var(--primary-hover);
+}
+
+/* Layout y Contenedor Principal */
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .shell header {
@@ -109,24 +129,76 @@ a:hover {
 }
 
 main {
+  flex: 1;
   padding: 2rem 1.5rem;
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
 }
 
-/* Tablas con alta legibilidad y estados visuales (ISO 9241-11) */
+/* === LOGIN CENTRADO (Pantalla completa y responsive) === */
+.login-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: radial-gradient(circle at top, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  margin: auto;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.login-brand {
+  font-size: 1.75rem;
+  letter-spacing: 0.08em;
+  color: #1e40af;
+  display: block;
+}
+
+.login-header h1 {
+  font-size: 1.35rem;
+  margin: 0.35rem 0 0.2rem;
+  color: #0f172a;
+}
+
+.login-header p {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* === TABLAS Y DATOS RESPONSIVOS === */
 .table-container {
   overflow-x: auto;
   background: var(--bg-card);
   border-radius: 8px;
   border: 1px solid var(--border-color);
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  width: 100%;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  min-width: 580px; /* Garantiza legibilidad con scroll horizontal en móviles */
 }
 
 th, td {
@@ -141,13 +213,14 @@ th {
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.025em;
+  white-space: nowrap;
 }
 
 tr:hover td {
   background: #f8fafc;
 }
 
-/* Botones accesibles con tamaño mínimo de interacción (44px min para móviles) */
+/* Botones con min-height de interacción táctil */
 button {
   background: var(--primary);
   color: #ffffff;
@@ -160,7 +233,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 40px;
+  min-height: 42px;
   transition: background 0.15s ease;
 }
 
@@ -187,8 +260,8 @@ input, select, textarea {
   border-radius: 6px;
   font-size: 1rem;
   background: #fff;
-  min-height: 40px;
-  box-sizing: border-box;
+  min-height: 42px;
+  width: 100%;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -208,10 +281,11 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  width: 100%;
 }
 
 .card.narrow {
-  max-width: 420px;
+  max-width: 440px;
 }
 
 .card label {
@@ -226,10 +300,12 @@ input:focus, select:focus, textarea:focus {
 .inline {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .inline input {
   flex: 1;
+  min-width: 200px;
 }
 
 .toolbar {
@@ -238,7 +314,11 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   margin-bottom: 1rem;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
+}
+
+.search-box {
+  width: 100%;
 }
 
 .search {
@@ -248,13 +328,14 @@ input:focus, select:focus, textarea:focus {
 
 .pager {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
   justify-content: center;
   margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
-/* Alertas semánticas y legibles (ISO 9241-11 Tolerancia a errores) */
+/* Alertas semánticas */
 .alert {
   padding: 0.75rem 1.25rem;
   border-radius: 6px;
@@ -281,13 +362,13 @@ input:focus, select:focus, textarea:focus {
   color: var(--text-muted);
 }
 
-/* Badges con alto contraste de color */
 .badge {
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .badge.blue {
@@ -315,7 +396,7 @@ input:focus, select:focus, textarea:focus {
   color: #334155;
 }
 
-/* Cuadrícula de estadísticas con métricas claras */
+/* Estadísticas adaptables */
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -369,4 +450,62 @@ input:focus, select:focus, textarea:focus {
   border-radius: 50%;
   background: var(--primary);
   border: 2px solid #fff;
+}
+
+/* === MEDIA QUERIES PARA RESPONSIVIDAD (MÓVILES Y TABLETS) === */
+@media (max-width: 768px) {
+  .shell header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .shell nav {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .who {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 0.75rem;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+    margin: 1rem auto;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar button {
+    width: 100%;
+  }
+
+  .inline {
+    flex-direction: column;
+  }
+
+  .inline input, .inline button {
+    width: 100%;
+  }
+
+  .stats {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .stat b {
+    font-size: 1.6rem;
+  }
 }
