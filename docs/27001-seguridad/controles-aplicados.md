@@ -8,8 +8,9 @@
 | A.8.15 | Registro de actividad | Tabla `audit_logs` (usuario, rol, método, ruta, estado, IP) vía `AuditApiRequests`; sin cuerpos de petición |
 | A.8.16 | Monitoreo | Registro de intentos de login fallidos en el log de Laravel |
 | A.8.8 | Gestión de vulnerabilidades técnicas | `composer audit` en CI; actualización realizada el 2026-11-19 (0 avisos) |
-| A.8.20 / A.8.21 | Seguridad de red y servicios | CORS con orígenes explícitos; cabeceras de seguridad; HSTS bajo HTTPS |
+| A.8.20 / A.8.21 | Seguridad de red y servicios | CORS con orígenes explícitos (SPA en `http://localhost:8080`); token en `sessionStorage`; cabeceras de seguridad; HSTS bajo HTTPS |
 | A.5.34 | Privacidad de datos personales | Consulta pública minimizada (`TituloPublicoResource`), sin cédula/teléfono/correo |
+| A.8.8 (frontend) | `npm audit` en CI sobre dependencias de producción |
 | A.8.9 | Gestión de configuración | Secretos solo en `.env`; `.env.example` sin valores sensibles |
 | A.8.13 | Respaldo | Procedimiento abajo |
 

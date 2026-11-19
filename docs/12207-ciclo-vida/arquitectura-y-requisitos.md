@@ -2,7 +2,7 @@
 
 ## 1. Arquitectura
 ```
-App Flutter  ──HTTPS/JSON──▶  API Laravel (/api/v1)  ──▶  MySQL
+SPA React   ──HTTPS/JSON──▶  API Laravel (/api/v1)  ──▶  MySQL
  (frontend/)                   Controller → Service → Model
 ```
 - Autenticación: tokens Sanctum (8 h de vigencia).
@@ -30,8 +30,8 @@ Seguridad (ver 27001), calidad (ver 25010), trazabilidad de cada título (`histo
 - Mensajes de commit recomendados: `feat:`, `fix:`, `docs:`, `test:`, `chore:`.
 
 ## 5. Verificación y validación
-- Pruebas automáticas en `backend/tests` (acceso por rol, validación, consulta pública, autenticación).
-- Pendiente: pruebas de los Services (flujo de lotes y entrega) y de la app Flutter.
+- Pruebas automáticas en `backend/tests` y `frontend/src` (Vitest) (acceso por rol, validación, consulta pública, autenticación).
+- Pendiente: pruebas de los Services (flujo de lotes y entrega) y de las pantallas React (ampliar).
 
 ## 6. Mantenimiento
 Registro de cambios en `CHANGELOG.md` (por crear al primer release). Actualizar dependencias con `composer update` y verificar con `composer audit`.
