@@ -13,6 +13,27 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Fillable([
     'graduado_id',
     'carrera',
+    'titulo_obtenido',
+    'anio_inicio_estudio',
+    'anio_fin_estudio',
+    'anio_graduacion',
+    'registrado_no',
+    'folio',
+    'tomo_registro',
+    'fecha_emision_titulo',
+    'sede',
+    'duracion_anios',
+    'numero_asignaturas',
+    'programa_especial',
+    'forma_culminacion',
+    'numero_gaceta',
+    'pagina_gaceta',
+    'fecha_gaceta',
+    'acceso_internet',
+    'tipo_acceso_internet',
+    'empresa_acceso_internet',
+    'fecha_registro_setec',
+    'registrador',
     'fecha_titulacion',
     'modalidad',
     'estado',
@@ -28,6 +49,10 @@ class Titulacion extends Model
     {
         return [
             'fecha_titulacion' => 'date',
+            'fecha_emision_titulo' => 'date',
+            'fecha_gaceta' => 'date',
+            'fecha_registro_setec' => 'date',
+            'acceso_internet' => 'boolean',
         ];
     }
 

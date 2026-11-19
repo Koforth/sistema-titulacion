@@ -13,9 +13,28 @@ class TitulacionController extends Controller
     public function index(Request $request)
     {
         return Titulacion::with('graduado', 'proceso', 'tituloFisico')
+            ->when($request->graduado_id, fn ($q, $gid) => $q->where('graduado_id', $gid))
+            ->when($request->documento, function ($query, $doc) {
+                $query->whereHas('graduado', fn ($w) => $w->where('cedula', 'like', "%{$doc}%")
+                    ->orWhere('carnet', 'like', "%{$doc}%"));
+            })
+            ->when($request->nombres, function ($query, $n) {
+                $query->whereHas('graduado', fn ($w) => $w->where('nombres', 'like', "%{$n}%")
+                    ->orWhere('nombre_completo', 'like', "%{$n}%"));
+            })
+            ->when($request->apellidos, function ($query, $a) {
+                $query->whereHas('graduado', fn ($w) => $w->where('apellidos', 'like', "%{$a}%")
+                    ->orWhere('nombre_completo', 'like', "%{$a}%"));
+            })
             ->when($request->q, function ($query, $q) {
-                $query->whereHas('graduado', fn ($w) => $w->where('nombre_completo', 'like', "%{$q}%")
-                    ->orWhere('carnet', 'like', "%{$q}%"));
+                $query->where(function ($w) use ($q) {
+                    $w->where('carrera', 'like', "%{$q}%")
+                      ->orWhere('titulo_obtenido', 'like', "%{$q}%")
+                      ->orWhere('registrado_no', 'like', "%{$q}%")
+                      ->orWhereHas('graduado', fn ($g) => $g->where('nombre_completo', 'like', "%{$q}%")
+                          ->orWhere('carnet', 'like', "%{$q}%")
+                          ->orWhere('cedula', 'like', "%{$q}%"));
+                });
             })
             ->latest()
             ->paginate(15);
@@ -23,7 +42,12 @@ class TitulacionController extends Controller
 
     public function store(TitulacionRequest $request): JsonResponse
     {
-        $titulacion = Titulacion::create($request->validated() + ['estado' => 'pendiente']);
+        $data = $request->validated();
+        if (empty($data['estado'])) {
+            $data['estado'] = 'pendiente';
+        }
+
+        $titulacion = Titulacion::create($data);
 
         return response()->json($titulacion->load('graduado'), 201);
     }
