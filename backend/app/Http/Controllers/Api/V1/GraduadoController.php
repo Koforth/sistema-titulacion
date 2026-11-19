@@ -17,25 +17,45 @@ class GraduadoController extends Controller
             ->when($request->q, function ($query, $q) {
                 $query->where(fn ($w) => $w->where('nombre_completo', 'like', "%{$q}%")
                     ->orWhere('carnet', 'like', "%{$q}%")
-                    ->orWhere('cedula', 'like', "%{$q}%"));
+                    ->orWhere('cedula', 'like', "%{$q}%")
+                    ->orWhere('nombres', 'like', "%{$q}%")
+                    ->orWhere('apellidos', 'like', "%{$q}%"));
             })
-            ->orderBy('nombre_completo')
+            ->when($request->documento, function ($query, $doc) {
+                $query->where(fn ($w) => $w->where('cedula', 'like', "%{$doc}%")
+                    ->orWhere('carnet', 'like', "%{$doc}%"));
+            })
+            ->when($request->nombres, fn ($q, $n) => $q->where('nombres', 'like', "%{$n}%"))
+            ->when($request->apellidos, fn ($q, $a) => $q->where('apellidos', 'like', "%{$a}%"))
+            ->orderBy('id', 'desc')
             ->paginate(15);
     }
 
     public function store(GraduadoRequest $request): JsonResponse
     {
-        return response()->json(Graduado::create($request->validated()), 201);
+        $data = $request->validated();
+        
+        // Autocompletar nombre_completo si se enviaron nombres y apellidos separados
+        if (empty($data['nombre_completo']) && (!empty($data['nombres']) || !empty($data['apellidos']))) {
+            $data['nombre_completo'] = trim(($data['nombres'] ?? '') . ' ' . ($data['apellidos'] ?? ''));
+        }
+
+        return response()->json(Graduado::create($data), 201);
     }
 
     public function show(Graduado $graduado)
     {
-        return $graduado->load('titulaciones');
+        return $graduado->load('titulaciones.tituloFisico', 'titulaciones.proceso');
     }
 
     public function update(GraduadoRequest $request, Graduado $graduado)
     {
-        $graduado->update($request->validated());
+        $data = $request->validated();
+        if (empty($data['nombre_completo']) && (!empty($data['nombres']) || !empty($data['apellidos']))) {
+            $data['nombre_completo'] = trim(($data['nombres'] ?? '') . ' ' . ($data['apellidos'] ?? ''));
+        }
+
+        $graduado->update($data);
 
         return $graduado;
     }

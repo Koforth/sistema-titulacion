@@ -11,9 +11,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'carnet',
     'cedula',
+    'tipo_identidad',
+    'nombres',
+    'apellidos',
     'nombre_completo',
+    'sexo',
+    'pais',
+    'estado_civil',
+    'etnia',
+    'departamento_origen',
+    'municipio_origen',
+    'departamento_residencia',
+    'municipio_residencia',
+    'direccion_residencia',
     'email',
     'telefono',
+    'anio_bachillerato',
+    'tipo_bachillerato',
+    'turno_bachillerato',
+    'modalidad_bachillerato',
 ])]
 class Graduado extends Model
 {

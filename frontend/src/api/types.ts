@@ -1,11 +1,80 @@
 export type Role = 'admin' | 'operador' | 'consulta';
 export interface User { id: number; name: string; email: string; role: Role }
-export interface Graduado { id: number; carnet?: string; cedula?: string; nombre_completo: string; email?: string; telefono?: string; titulaciones_count?: number }
-export interface Titulacion { id: number; graduado_id: number; carrera: string; fecha_titulacion?: string; modalidad?: string; estado?: string; graduado?: Graduado; proceso?: { id: number } | null; titulo_fisico?: TituloFisico | null }
-export interface TituloFisico { id: number; uuid: string; numero_titulo: string; ubicacion_actual: string; libro?: string; tomo?: string; folio?: string; calidad?: string; observaciones?: string; titulacion?: Titulacion; historial?: Historial[] }
-export interface Historial { id: number; accion?: string; descripcion?: string; created_at: string; usuario?: { name: string } | null }
-export interface Lote { id: number; numero_lote: string; estado?: string; created_at: string; detalle?: { id: number; estado?: string; titulo_fisico?: TituloFisico }[] }
-export interface Proceso { id: number; pendiente?: boolean; titulacion?: Titulacion }
+
+export interface Graduado {
+  id: number;
+  tipo_identidad?: string;
+  carnet?: string;
+  cedula?: string;
+  nombres?: string;
+  apellidos?: string;
+  nombre_completo: string;
+  sexo?: string;
+  pais?: string;
+  estado_civil?: string;
+  etnia?: string;
+  departamento_origen?: string;
+  municipio_origen?: string;
+  departamento_residencia?: string;
+  municipio_residencia?: string;
+  direccion_residencia?: string;
+  email?: string;
+  telefono?: string;
+  anio_bachillerato?: string;
+  tipo_bachillerato?: string;
+  turno_bachillerato?: string;
+  modalidad_bachillerato?: string;
+  titulaciones_count?: number;
+  titulaciones?: Titulacion[];
+}
+
+export interface Titulacion {
+  id: number;
+  graduado_id: number;
+  carrera: string;
+  fecha_titulacion?: string;
+  modalidad?: string;
+  estado?: string;
+  graduado?: Graduado;
+  proceso?: { id: number } | null;
+  titulo_fisico?: TituloFisico | null;
+}
+
+export interface TituloFisico {
+  id: number;
+  uuid: string;
+  numero_titulo: string;
+  ubicacion_actual: string;
+  libro?: string;
+  tomo?: string;
+  folio?: string;
+  calidad?: string;
+  observaciones?: string;
+  titulacion?: Titulacion;
+  historial?: Historial[];
+}
+
+export interface Historial {
+  id: number;
+  accion?: string;
+  descripcion?: string;
+  created_at: string;
+  usuario?: { name: string } | null;
+}
+
+export interface Lote {
+  id: number;
+  numero_lote: string;
+  estado?: string;
+  created_at: string;
+  detalle?: { id: number; estado?: string; titulo_fisico?: TituloFisico }[];
+}
+
+export interface Proceso {
+  id: number;
+  pendiente?: boolean;
+  titulacion?: Titulacion;
+}
 
 export interface KPIItem {
   valor: number;
@@ -48,4 +117,11 @@ export interface Dashboard {
   servidor_tiempo?: string;
 }
 
-export interface TituloPublico { uuid: string; numero_titulo: string; estado: string; graduado?: string; carrera?: string; fecha_titulacion?: string }
+export interface TituloPublico {
+  uuid: string;
+  numero_titulo: string;
+  estado: string;
+  graduado?: string;
+  carrera?: string;
+  fecha_titulacion?: string;
+}
