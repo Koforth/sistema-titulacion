@@ -208,14 +208,6 @@ export default function Graduados() {
 
         <form onSubmit={aplicarFiltros}>
           <div className="filter-grid">
-            <div className="filter-group col-full">
-              <label>Institución</label>
-              <input
-                type="text"
-                disabled
-                value="Universidad Nacional Autónoma de Nicaragua - León (UNAN-León) / SIGTU"
-              />
-            </div>
 
             <div className="filter-group">
               <label>Documento de Identidad</label>
