@@ -4,6 +4,12 @@ import { Alert, Loading, Pager, Badge, fecha } from '../components/ui';
 import { useAuth } from '../auth/AuthContext';
 import { errorMessage, useApi } from '../hooks/useApi';
 import type { Graduado, Titulacion } from '../api/types';
+import SearchableSelect from '../components/SearchableSelect';
+import {
+  PAISES_DEL_MUNDO,
+  LISTA_DEPARTAMENTOS_NICARAGUA,
+  getMunicipiosDeDepartamento,
+} from '../data/geoData';
 
 export default function Graduados() {
   const { can, user } = useAuth();
@@ -84,6 +90,8 @@ export default function Graduados() {
     fecha_registro_setec: new Date().toISOString().split('T')[0],
     registrador: user?.name ? `${user.name} (${user.role})` : 'Registrador Autorizado',
   });
+
+  const isPaisNicaragua = formGraduado.pais.trim().toLowerCase() === 'nicaragua';
 
   // Filtros
   const aplicarFiltros = (e?: FormEvent) => {
@@ -169,8 +177,14 @@ export default function Graduados() {
           pais: est.pais || prev.pais,
           estado_civil: est.estado_civil || prev.estado_civil,
           etnia: est.etnia || prev.etnia,
-          departamento_origen: est.departamento_origen || prev.departamento_origen,
-          municipio_origen: est.municipio_origen || prev.municipio_origen,
+          departamento_origen:
+            (est.pais || prev.pais || '').trim().toLowerCase() === 'nicaragua'
+              ? est.departamento_origen || prev.departamento_origen
+              : 'NO DEFINIDO',
+          municipio_origen:
+            (est.pais || prev.pais || '').trim().toLowerCase() === 'nicaragua'
+              ? est.municipio_origen || prev.municipio_origen
+              : 'NO DEFINIDO',
           departamento_residencia: est.departamento_residencia || prev.departamento_residencia,
           municipio_residencia: est.municipio_residencia || prev.municipio_residencia,
           direccion_residencia: est.direccion_residencia || prev.direccion_residencia,
@@ -233,6 +247,9 @@ export default function Graduados() {
 
   const abrirModalEditarGraduado = (g: Graduado) => {
     setEditingGraduado(g);
+    const paisVal = g.pais || 'Nicaragua';
+    const esNicaragua = paisVal.trim().toLowerCase() === 'nicaragua';
+
     setFormGraduado({
       tipo_identidad: g.tipo_identidad || 'Cédula de Identidad Nicaragüense',
       cedula: g.cedula || '',
@@ -241,11 +258,11 @@ export default function Graduados() {
       apellidos: g.apellidos || '',
       nombre_completo: g.nombre_completo || '',
       sexo: g.sexo || 'Femenino',
-      pais: g.pais || 'Nicaragua',
+      pais: paisVal,
       estado_civil: g.estado_civil || 'Soltero(a)',
       etnia: g.etnia || 'Mestizo',
-      departamento_origen: g.departamento_origen || 'León',
-      municipio_origen: g.municipio_origen || 'León',
+      departamento_origen: esNicaragua ? g.departamento_origen || 'León' : 'NO DEFINIDO',
+      municipio_origen: esNicaragua ? g.municipio_origen || 'León' : 'NO DEFINIDO',
       departamento_residencia: g.departamento_residencia || 'León',
       municipio_residencia: g.municipio_residencia || 'León',
       direccion_residencia: g.direccion_residencia || '',
@@ -274,6 +291,52 @@ export default function Graduados() {
           ? `${prev.nombres} ${value}`.trim()
           : prev.nombre_completo,
     }));
+  };
+
+  const handleGraduadoSelectChange = (name: string, value: string) => {
+    setFormGraduado((prev) => {
+      const updated = { ...prev, [name]: value };
+
+      // Regla de negocio: Si el país no es Nicaragua, Departamento y Municipio de origen son NO DEFINIDO
+      if (name === 'pais') {
+        const esNicaragua = value.trim().toLowerCase() === 'nicaragua';
+        if (!esNicaragua) {
+          updated.departamento_origen = 'NO DEFINIDO';
+          updated.municipio_origen = 'NO DEFINIDO';
+        } else {
+          if (updated.departamento_origen === 'NO DEFINIDO') {
+            updated.departamento_origen = 'León';
+            updated.municipio_origen = 'León';
+          }
+        }
+      }
+
+      // Regla de negocio: Vincular Departamento de Origen con sus Municipios
+      if (name === 'departamento_origen') {
+        if (value === 'NO DEFINIDO') {
+          updated.municipio_origen = 'NO DEFINIDO';
+        } else {
+          const municipios = getMunicipiosDeDepartamento(value);
+          if (!municipios.includes(updated.municipio_origen)) {
+            updated.municipio_origen = municipios[0] || 'León';
+          }
+        }
+      }
+
+      // Regla de negocio: Vincular Departamento de Residencia con sus Municipios
+      if (name === 'departamento_residencia') {
+        const municipios = getMunicipiosDeDepartamento(value);
+        if (!municipios.includes(updated.municipio_residencia)) {
+          updated.municipio_residencia = municipios[0] || 'León';
+        }
+      }
+
+      return updated;
+    });
+  };
+
+  const handleTituloSelectChange = (name: string, value: string) => {
+    setFormTitulo((prev) => ({ ...prev, [name]: value }));
   };
 
   const guardarGraduado = async (e?: FormEvent) => {
@@ -762,11 +825,12 @@ export default function Graduados() {
                   <div className="form-grid-3">
                     <div className="form-field">
                       <label>Tipo de Identidad *</label>
-                      <select name="tipo_identidad" value={formGraduado.tipo_identidad} onChange={handleGraduadoChange}>
-                        <option value="Cédula de Identidad Nicaragüense">Cédula de Identidad Nicaragüense</option>
-                        <option value="Pasaporte">Pasaporte</option>
-                        <option value="Carné de Residente">Carné de Residente</option>
-                      </select>
+                      <SearchableSelect
+                        name="tipo_identidad"
+                        value={formGraduado.tipo_identidad}
+                        options={['Cédula de Identidad Nicaragüense', 'Pasaporte', 'Carné de Residente', 'INSS']}
+                        onChange={(val) => handleGraduadoSelectChange('tipo_identidad', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Documento de Identidad *</label>
@@ -774,10 +838,12 @@ export default function Graduados() {
                     </div>
                     <div className="form-field">
                       <label>Sexo *</label>
-                      <select name="sexo" value={formGraduado.sexo} onChange={handleGraduadoChange}>
-                        <option value="Femenino">Femenino</option>
-                        <option value="Masculino">Masculino</option>
-                      </select>
+                      <SearchableSelect
+                        name="sexo"
+                        value={formGraduado.sexo}
+                        options={['Femenino', 'Masculino']}
+                        onChange={(val) => handleGraduadoSelectChange('sexo', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Nombres *</label>
@@ -789,64 +855,68 @@ export default function Graduados() {
                     </div>
                     <div className="form-field">
                       <label>País *</label>
-                      <select name="pais" value={formGraduado.pais} onChange={handleGraduadoChange}>
-                        <option value="Nicaragua">Nicaragua</option>
-                        <option value="Costa Rica">Costa Rica</option>
-                        <option value="Honduras">Honduras</option>
-                        <option value="Otro">Otro</option>
-                      </select>
+                      <SearchableSelect
+                        name="pais"
+                        value={formGraduado.pais}
+                        options={PAISES_DEL_MUNDO}
+                        onChange={(val) => handleGraduadoSelectChange('pais', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Estado Civil *</label>
-                      <select name="estado_civil" value={formGraduado.estado_civil} onChange={handleGraduadoChange}>
-                        <option value="Soltero(a)">Soltero(a)</option>
-                        <option value="Casado(a)">Casado(a)</option>
-                        <option value="Unión de Hecho">Unión de Hecho</option>
-                      </select>
+                      <SearchableSelect
+                        name="estado_civil"
+                        value={formGraduado.estado_civil}
+                        options={['Soltero(a)', 'Casado(a)', 'Unión de Hecho', 'Divorciado(a)', 'Viudo(a)']}
+                        onChange={(val) => handleGraduadoSelectChange('estado_civil', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Departamento Origen *</label>
-                      <select name="departamento_origen" value={formGraduado.departamento_origen} onChange={handleGraduadoChange}>
-                        <option value="León">León</option>
-                        <option value="Managua">Managua</option>
-                        <option value="Chinandega">Chinandega</option>
-                        <option value="Matagalpa">Matagalpa</option>
-                        <option value="Estelí">Estelí</option>
-                      </select>
+                      <SearchableSelect
+                        name="departamento_origen"
+                        value={isPaisNicaragua ? formGraduado.departamento_origen : 'NO DEFINIDO'}
+                        options={isPaisNicaragua ? LISTA_DEPARTAMENTOS_NICARAGUA : ['NO DEFINIDO']}
+                        disabled={!isPaisNicaragua}
+                        onChange={(val) => handleGraduadoSelectChange('departamento_origen', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Municipio Origen *</label>
-                      <select name="municipio_origen" value={formGraduado.municipio_origen} onChange={handleGraduadoChange}>
-                        <option value="León">León</option>
-                        <option value="Nagarote">Nagarote</option>
-                        <option value="La Paz Centro">La Paz Centro</option>
-                        <option value="Malpaisillo">Malpaisillo</option>
-                      </select>
+                      <SearchableSelect
+                        name="municipio_origen"
+                        value={isPaisNicaragua ? formGraduado.municipio_origen : 'NO DEFINIDO'}
+                        options={isPaisNicaragua ? getMunicipiosDeDepartamento(formGraduado.departamento_origen) : ['NO DEFINIDO']}
+                        disabled={!isPaisNicaragua}
+                        onChange={(val) => handleGraduadoSelectChange('municipio_origen', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Etnia *</label>
-                      <select name="etnia" value={formGraduado.etnia} onChange={handleGraduadoChange}>
-                        <option value="Mestizo">Mestizo</option>
-                        <option value="Miskito">Miskito</option>
-                        <option value="Creole">Creole</option>
-                        <option value="Chorotega">Chorotega</option>
-                      </select>
+                      <SearchableSelect
+                        name="etnia"
+                        value={formGraduado.etnia}
+                        options={['Mestizo', 'Miskito', 'Creole', 'Chorotega', 'Sumo / Mayangna', 'Rama', 'Garífuna', 'Otro']}
+                        onChange={(val) => handleGraduadoSelectChange('etnia', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Departamento Residencia *</label>
-                      <select name="departamento_residencia" value={formGraduado.departamento_residencia} onChange={handleGraduadoChange}>
-                        <option value="León">León</option>
-                        <option value="Managua">Managua</option>
-                        <option value="Chinandega">Chinandega</option>
-                      </select>
+                      <SearchableSelect
+                        name="departamento_residencia"
+                        value={formGraduado.departamento_residencia}
+                        options={LISTA_DEPARTAMENTOS_NICARAGUA}
+                        onChange={(val) => handleGraduadoSelectChange('departamento_residencia', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Municipio Residencia *</label>
-                      <select name="municipio_residencia" value={formGraduado.municipio_residencia} onChange={handleGraduadoChange}>
-                        <option value="León">León</option>
-                        <option value="Nagarote">Nagarote</option>
-                        <option value="La Paz Centro">La Paz Centro</option>
-                      </select>
+                      <SearchableSelect
+                        name="municipio_residencia"
+                        value={formGraduado.municipio_residencia}
+                        options={getMunicipiosDeDepartamento(formGraduado.departamento_residencia)}
+                        onChange={(val) => handleGraduadoSelectChange('municipio_residencia', val)}
+                      />
                     </div>
                     <div className="form-field col-span-3">
                       <label>Dirección de Residencia *</label>
@@ -880,11 +950,12 @@ export default function Graduados() {
                         <tr>
                           <td>1</td>
                           <td>
-                            <select name="linea_telefonica" value={formGraduado.linea_telefonica} onChange={handleGraduadoChange}>
-                              <option value="Claro">Claro</option>
-                              <option value="Tigo">Tigo</option>
-                              <option value="Convencional">Convencional</option>
-                            </select>
+                            <SearchableSelect
+                              name="linea_telefonica"
+                              value={formGraduado.linea_telefonica}
+                              options={['Claro', 'Tigo', 'Convencional', 'Otro']}
+                              onChange={(val) => handleGraduadoSelectChange('linea_telefonica', val)}
+                            />
                           </td>
                           <td>
                             <input type="text" name="telefono" placeholder="0000-0000" value={formGraduado.telefono} onChange={handleGraduadoChange} />
@@ -912,27 +983,30 @@ export default function Graduados() {
                     </div>
                     <div className="form-field">
                       <label>Tipo de Bachillerato *</label>
-                      <select name="tipo_bachillerato" value={formGraduado.tipo_bachillerato} onChange={handleGraduadoChange}>
-                        <option value="Regular">Regular</option>
-                        <option value="Técnico">Técnico</option>
-                        <option value="Por Madurez">Por Madurez</option>
-                      </select>
+                      <SearchableSelect
+                        name="tipo_bachillerato"
+                        value={formGraduado.tipo_bachillerato}
+                        options={['Regular', 'Técnico', 'Por Madurez']}
+                        onChange={(val) => handleGraduadoSelectChange('tipo_bachillerato', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Turno del Bachillerato *</label>
-                      <select name="turno_bachillerato" value={formGraduado.turno_bachillerato} onChange={handleGraduadoChange}>
-                        <option value="Matutino">Matutino</option>
-                        <option value="Vespertino">Vespertino</option>
-                        <option value="Sabatino">Sabatino</option>
-                      </select>
+                      <SearchableSelect
+                        name="turno_bachillerato"
+                        value={formGraduado.turno_bachillerato}
+                        options={['Matutino', 'Vespertino', 'Sabatino', 'Dominical', 'Nocturno']}
+                        onChange={(val) => handleGraduadoSelectChange('turno_bachillerato', val)}
+                      />
                     </div>
                     <div className="form-field">
                       <label>Modalidad del Bachillerato *</label>
-                      <select name="modalidad_bachillerato" value={formGraduado.modalidad_bachillerato} onChange={handleGraduadoChange}>
-                        <option value="Presencial">Presencial</option>
-                        <option value="A Distancia">A Distancia</option>
-                        <option value="Virtual">Virtual</option>
-                      </select>
+                      <SearchableSelect
+                        name="modalidad_bachillerato"
+                        value={formGraduado.modalidad_bachillerato}
+                        options={['Presencial', 'A Distancia', 'Virtual']}
+                        onChange={(val) => handleGraduadoSelectChange('modalidad_bachillerato', val)}
+                      />
                     </div>
                   </div>
                 </div>
@@ -1015,11 +1089,12 @@ export default function Graduados() {
                     </div>
                     <div className="form-field col-span-2">
                       <label>Sede *</label>
-                      <select name="sede" value={formTitulo.sede} onChange={handleTituloChange}>
-                        <option value="Sede Central - León">Sede Central - León</option>
-                        <option value="Sede Somoto">Sede Somoto</option>
-                        <option value="Sede Jinotega">Sede Jinotega</option>
-                      </select>
+                      <SearchableSelect
+                        options={['Sede Central - León', 'Sede Somoto', 'Sede Jinotega', 'Sede Managua', 'Sede Chinandega', 'Sede Estelí', 'Sede Matagalpa', 'Sede Juigalpa', 'Sede Boaco', 'Sede Rivas']}
+                        value={formTitulo.sede}
+                        onChange={(val) => handleTituloSelectChange('sede', val)}
+                        placeholder="Seleccionar o buscar sede..."
+                      />
                     </div>
                     <div className="form-field col-span-3">
                       <label>Carrera / Maestría / Especialidad *</label>
@@ -1035,11 +1110,12 @@ export default function Graduados() {
                     </div>
                     <div className="form-field">
                       <label>Programa Especial *</label>
-                      <select name="programa_especial" value={formTitulo.programa_especial} onChange={handleTituloChange}>
-                        <option value="Ninguno">Ninguno</option>
-                        <option value="Universidad en el Campo">Universidad en el Campo</option>
-                        <option value="Profesionalización">Profesionalización</option>
-                      </select>
+                      <SearchableSelect
+                        options={['Ninguno', 'Universidad en el Campo', 'Profesionalización', 'Por Encuentro', 'Programa Sabatino']}
+                        value={formTitulo.programa_especial}
+                        onChange={(val) => handleTituloSelectChange('programa_especial', val)}
+                        placeholder="Seleccionar o buscar programa..."
+                      />
                     </div>
                   </div>
                 </div>
@@ -1050,12 +1126,12 @@ export default function Graduados() {
                   <div className="form-grid-3">
                     <div className="form-field col-span-3">
                       <label>Forma Culminación Estudio *</label>
-                      <select name="forma_culminacion" value={formTitulo.forma_culminacion} onChange={handleTituloChange}>
-                        <option value="Monografía">Monografía</option>
-                        <option value="Examen de Grado">Examen de Grado</option>
-                        <option value="Curso de Graduación">Curso de Graduación</option>
-                        <option value="Práctica Profesional">Práctica Profesional</option>
-                      </select>
+                      <SearchableSelect
+                        options={['Monografía', 'Examen de Grado', 'Curso de Graduación', 'Práctica Profesional', 'Tesis']}
+                        value={formTitulo.forma_culminacion}
+                        onChange={(val) => handleTituloSelectChange('forma_culminacion', val)}
+                        placeholder="Seleccionar o buscar forma de culminación..."
+                      />
                     </div>
                     <div className="form-field">
                       <label>Número de LA GACETA *</label>
@@ -1078,20 +1154,21 @@ export default function Graduados() {
                     </div>
                     <div className="form-field">
                       <label>Tipo Acceso a Internet *</label>
-                      <select name="tipo_acceso_internet" value={formTitulo.tipo_acceso_internet} onChange={handleTituloChange}>
-                        <option value="Sin Especificar">Sin Especificar</option>
-                        <option value="Fibra Óptica / Cable">Fibra Óptica / Cable</option>
-                        <option value="Móvil / Datos">Móvil / Datos</option>
-                      </select>
+                      <SearchableSelect
+                        options={['Sin Especificar', 'Fibra Óptica / Cable', 'Móvil / Datos']}
+                        value={formTitulo.tipo_acceso_internet}
+                        onChange={(val) => handleTituloSelectChange('tipo_acceso_internet', val)}
+                        placeholder="Tipo de conexión..."
+                      />
                     </div>
                     <div className="form-field">
                       <label>Empresa Acceso a Internet *</label>
-                      <select name="empresa_acceso_internet" value={formTitulo.empresa_acceso_internet} onChange={handleTituloChange}>
-                        <option value="Sin Especificar">Sin Especificar</option>
-                        <option value="Claro">Claro</option>
-                        <option value="Tigo">Tigo</option>
-                        <option value="IBW">IBW</option>
-                      </select>
+                      <SearchableSelect
+                        options={['Sin Especificar', 'Claro', 'Tigo', 'IBW']}
+                        value={formTitulo.empresa_acceso_internet}
+                        onChange={(val) => handleTituloSelectChange('empresa_acceso_internet', val)}
+                        placeholder="Proveedor..."
+                      />
                     </div>
                     <div className="form-field">
                       <label>Fecha de Registro *</label>
