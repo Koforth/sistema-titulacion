@@ -56,7 +56,7 @@ export function ConsultaHome() {
             🎓
           </div>
           <div className="public-brand-text">
-            <h1>Universidad Nacional Casimiro Sotelo Montenegro</h1>
+            <h1>Universidad Nacional Comandante Padre Gaspar García Laviana</h1>
             <span>Sistema Integrado de Gestión de Títulos Universitarios (SIGTU)</span>
           </div>
         </Link>
@@ -214,7 +214,7 @@ export function ConsultaHome() {
       {/* Pie de Página Institucional */}
       <footer className="public-portal-footer">
         <p style={{ margin: '0 0 0.3rem 0', fontWeight: 600 }}>
-          Universidad Nacional Casimiro Sotelo Montenegro — Secretaría General · Dirección de Registro y Titulación
+          Universidad Nacional Comandante Padre Gaspar García Laviana — Secretaría General · Dirección de Registro y Titulación
         </p>
         <p style={{ margin: 0, opacity: 0.85 }}>
           Portal Oficial de Verificación amparado bajo la Ley de Reconocimiento y Registro de Títulos de la República de Nicaragua. Los datos expuestos cumplen con las normas de minimización y protección de la privacidad (ISO 27001).
@@ -254,7 +254,7 @@ export function Verificar() {
           <Link to="/" className="public-brand">
             <span style={{ fontSize: '1.4rem' }}>🎓</span>
             <div className="public-brand-text">
-              <h1>Universidad Nacional Casimiro Sotelo Montenegro</h1>
+              <h1>Universidad Nacional Comandante Padre Gaspar García Laviana</h1>
               <span>Sistema Integrado de Gestión de Títulos Universitarios</span>
             </div>
           </Link>
@@ -288,7 +288,7 @@ export function Verificar() {
         <Link to="/" className="public-brand">
           <span style={{ fontSize: '1.4rem' }}>🎓</span>
           <div className="public-brand-text">
-            <h1>Universidad Nacional Casimiro Sotelo Montenegro</h1>
+            <h1>Universidad Nacional Comandante Padre Gaspar García Laviana</h1>
             <span>Sistema Integrado de Gestión de Títulos Universitarios</span>
           </div>
         </Link>
@@ -318,7 +318,7 @@ export function Verificar() {
           <div className="official-certificate-sheet">
             <div className="cert-header">
               <div style={{ fontSize: '2.5rem', marginBottom: '0.3rem' }}>🏛️</div>
-              <h2>UNIVERSIDAD NACIONAL CASIMIRO SOTELO MONTENEGRO</h2>
+              <h2>UNIVERSIDAD NACIONAL COMANDANTE PADRE GASPAR GARCÍA LAVIANA</h2>
               <h3>República de Nicaragua · Consejo Nacional de Universidades (CNU)</h3>
               <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>
                 Secretaría General · Dirección de Registro y Titulación Universitaria
@@ -404,7 +404,7 @@ export function Verificar() {
                 <div><strong>Identificador Único (UUID):</strong> <code>{t.uuid}</code></div>
                 <div><strong>Fecha y Hora de Cotejo:</strong> {t.fecha_consulta || new Date().toLocaleString()}</div>
                 <div style={{ marginTop: '0.4rem', fontSize: '0.7rem', color: '#64748b', lineHeight: 1.3 }}>
-                  La presente constancia electrónica certifica la correspondencia de los datos con el Libro Oficial de Títulos de la Universidad Nacional Casimiro Sotelo Montenegro, amparada por la normativa nacional del CNU.
+                  La presente constancia electrónica certifica la correspondencia de los datos con el Libro Oficial de Títulos de la Universidad Nacional Comandante Padre Gaspar García Laviana, amparada por la normativa nacional del CNU.
                 </div>
               </div>
 
@@ -423,7 +423,7 @@ export function Verificar() {
 
       <footer className="public-portal-footer">
         <p style={{ margin: 0 }}>
-          © {new Date().getFullYear()} Universidad Nacional Casimiro Sotelo Montenegro · Dirección de Registro y Titulación
+          © {new Date().getFullYear()} Universidad Nacional Comandante Padre Gaspar García Laviana · Dirección de Registro y Titulación
         </p>
       </footer>
     </div>
