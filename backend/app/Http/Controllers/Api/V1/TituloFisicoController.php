@@ -33,6 +33,17 @@ class TituloFisicoController extends Controller
         return Titulacion::with('graduado')->whereDoesntHave('tituloFisico')->orderBy('id')->get();
     }
 
+    public function resumenUbicaciones(): JsonResponse
+    {
+        return response()->json([
+            'leon' => TituloFisico::where('ubicacion_actual', 'LEON')->count(),
+            'imprenta' => TituloFisico::where('ubicacion_actual', 'IMPRENTA')->count(),
+            'setec' => TituloFisico::where('ubicacion_actual', 'SETEC')->count(),
+            'entregado' => TituloFisico::where('ubicacion_actual', 'ENTREGADO')->count(),
+            'total' => TituloFisico::count(),
+        ]);
+    }
+
     public function store(TituloFisicoRequest $request): JsonResponse
     {
         $titulo = TituloFisico::create($request->validated() + [

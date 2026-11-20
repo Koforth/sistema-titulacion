@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
         Route::get('procesos-titulo/stats', [V1\ProcesoTituloController::class, 'stats']);
         Route::get('procesos-titulo/{proceso}', [V1\ProcesoTituloController::class, 'show']);
         Route::get('titulos-fisicos', [V1\TituloFisicoController::class, 'index']);
+        Route::get('titulos-fisicos/resumen-ubicaciones', [V1\TituloFisicoController::class, 'resumenUbicaciones']);
         Route::get('titulos-fisicos/disponibles', [V1\TituloFisicoController::class, 'disponibles']);
         Route::get('titulos-fisicos/{titulo}', [V1\TituloFisicoController::class, 'show']);
         Route::get('titulos-fisicos/{titulo}/historial', [V1\TituloFisicoController::class, 'historial']);

@@ -75,6 +75,14 @@ export interface TituloFisico {
   historial?: Historial[];
 }
 
+export interface ResumenUbicaciones {
+  leon: number;
+  imprenta: number;
+  setec: number;
+  entregado: number;
+  total: number;
+}
+
 export interface Historial {
   id: number;
   accion?: string;

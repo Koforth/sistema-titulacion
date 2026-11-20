@@ -5,11 +5,8 @@ import { useAuth } from '../auth/AuthContext';
 const links = [
   ['/dashboard', 'Dashboard'],
   ['/graduados', 'Graduados y Títulos'],
-  ['/procesos', 'Procesos'],
-  ['/titulos', 'Títulos físicos'],
-  ['/impresion', 'Impresión'],
-  ['/setec', 'SETEC'],
-  ['/entrega', 'Entrega'],
+  ['/procesos', 'Procesos y SLA'],
+  ['/custodia', 'Custodia de Títulos'],
   ['/reportes', 'Reportes'],
 ];
 
@@ -56,16 +53,24 @@ export default function Layout() {
           className={`nav-menu ${menuOpen ? 'open' : ''}`}
           aria-label="Navegación principal"
         >
-          {links.map(([to, label]) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={closeMenu}
-              className={({ isActive }) => (isActive ? 'active' : '')}
-            >
-              {label}
-            </NavLink>
-          ))}
+          {links.map(([to, label]) => {
+            const isCustodiaActive =
+              to === '/custodia' &&
+              ['/custodia', '/titulos', '/impresion', '/setec', '/entrega'].some((p) =>
+                location.pathname.startsWith(p)
+              );
+
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                onClick={closeMenu}
+                className={({ isActive }) => (isActive || isCustodiaActive ? 'active' : '')}
+              >
+                {label}
+              </NavLink>
+            );
+          })}
 
           <div className="who-mobile" aria-label="Información de sesión">
             <div className="user-badge">
