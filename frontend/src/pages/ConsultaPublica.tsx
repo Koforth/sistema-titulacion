@@ -76,7 +76,7 @@ export function ConsultaHome() {
             Consulta pública de títulos
           </h2>
           <p className="public-hero-desc">
-            Consulte y verifique la autenticidad académica y jurídica de títulos universitarios emitidos por la UNCPGGL, conforme al Sistema Oficial SETEC y los estándares del Consejo Nacional de Universidades (CNU).
+            Consulte y verifique la autenticidad académica y jurídica de títulos universitarios emitidos por la UNCPGGL, conforme al Sistema Oficial y los estándares de SETEC.
           </p>
         </section>
 
@@ -319,7 +319,7 @@ export function Verificar() {
             <div className="cert-header">
               <div style={{ fontSize: '2.5rem', marginBottom: '0.3rem' }}>🏛️</div>
               <h2>UNIVERSIDAD NACIONAL COMANDANTE PADRE GASPAR GARCÍA LAVIANA</h2>
-              <h3>República de Nicaragua · Consejo Nacional de Universidades (CNU)</h3>
+              <h3>República de Nicaragua · SETEC</h3>
               <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>
                 Secretaría General · Dirección de Registro y Titulación Universitaria
               </p>
@@ -404,7 +404,7 @@ export function Verificar() {
                 <div><strong>Identificador Único (UUID):</strong> <code>{t.uuid}</code></div>
                 <div><strong>Fecha y Hora de Cotejo:</strong> {t.fecha_consulta || new Date().toLocaleString()}</div>
                 <div style={{ marginTop: '0.4rem', fontSize: '0.7rem', color: '#64748b', lineHeight: 1.3 }}>
-                  La presente constancia electrónica certifica la correspondencia de los datos con el Libro Oficial de Títulos de la Universidad Nacional Comandante Padre Gaspar García Laviana, amparada por la normativa nacional del CNU.
+                  La presente constancia electrónica certifica la correspondencia de los datos con el Libro Oficial de Títulos de la Universidad Nacional Comandante Padre Gaspar García Laviana, amparada por la normativa nacional de SETEC.
                 </div>
               </div>
 
