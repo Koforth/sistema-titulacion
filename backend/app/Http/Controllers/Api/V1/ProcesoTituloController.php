@@ -15,12 +15,64 @@ class ProcesoTituloController extends Controller
 
     public function index(Request $request)
     {
-        return ProcesoTitulo::with('titulacion.graduado', 'titulacion.tituloFisico')
-            ->when($request->q, function ($query, $q) {
-                $query->whereHas('titulacion.graduado', fn ($w) => $w->where('nombre_completo', 'like', "%{$q}%"));
+        $query = ProcesoTitulo::with('titulacion.graduado', 'titulacion.tituloFisico')
+            ->when($request->q, function ($qBuilder, $q) {
+                $qBuilder->where(function ($sub) use ($q) {
+                    $sub->whereHas('titulacion.graduado', function ($w) use ($q) {
+                        $w->where('nombre_completo', 'like', "%{$q}%")
+                          ->orWhere('cedula', 'like', "%{$q}%")
+                          ->orWhere('carnet', 'like', "%{$q}%");
+                    })->orWhereHas('titulacion', function ($w) use ($q) {
+                        $w->where('carrera', 'like', "%{$q}%");
+                    });
+                });
             })
-            ->latest()
-            ->paginate(15);
+            ->when($request->estado, function ($qBuilder, $estado) {
+                if ($estado === 'finalizado') {
+                    $qBuilder->where('titulo_entregado_graduado', true);
+                } elseif ($estado === 'en_tiempo') {
+                    $qBuilder->where('titulo_entregado_graduado', false)
+                             ->where(function ($sub) {
+                                 $sub->whereNull('fecha_limite_sla')
+                                     ->orWhere('fecha_limite_sla', '>=', now()->addDays(10));
+                             });
+                } elseif ($estado === 'proximo_vencer') {
+                    $qBuilder->where('titulo_entregado_graduado', false)
+                             ->whereNotNull('fecha_limite_sla')
+                             ->whereBetween('fecha_limite_sla', [now(), now()->addDays(10)]);
+                } elseif ($estado === 'vencido') {
+                    $qBuilder->where('titulo_entregado_graduado', false)
+                             ->whereNotNull('fecha_limite_sla')
+                             ->where('fecha_limite_sla', '<', now());
+                }
+            });
+
+        return $query->latest()->paginate(15);
+    }
+
+    public function stats(): JsonResponse
+    {
+        $ahora = now();
+        $total = ProcesoTitulo::count();
+        $finalizados = ProcesoTitulo::where('titulo_entregado_graduado', true)->count();
+        $enTramite = ProcesoTitulo::where('titulo_entregado_graduado', false)->count();
+        $vencidos = ProcesoTitulo::where('titulo_entregado_graduado', false)
+            ->whereNotNull('fecha_limite_sla')
+            ->where('fecha_limite_sla', '<', $ahora)
+            ->count();
+        $enAlerta = ProcesoTitulo::where('titulo_entregado_graduado', false)
+            ->whereNotNull('fecha_limite_sla')
+            ->whereBetween('fecha_limite_sla', [$ahora, $ahora->copy()->addDays(10)])
+            ->count();
+
+        return response()->json([
+            'total' => $total,
+            'en_tramite' => $enTramite,
+            'en_alerta' => $enAlerta,
+            'vencidos' => $vencidos,
+            'finalizados' => $finalizados,
+            'etapas' => ProcesoTituloService::ETAPAS,
+        ]);
     }
 
     public function show(ProcesoTitulo $proceso)

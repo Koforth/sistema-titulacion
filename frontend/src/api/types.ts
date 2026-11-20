@@ -116,8 +116,41 @@ export interface Lote {
 
 export interface Proceso {
   id: number;
+  titulacion_id: number;
+  solicitado_estudiante?: boolean;
+  expediente_completo?: boolean;
+  elaboracion_bd?: boolean;
+  elaboracion_titulo?: boolean;
+  doc_certificacion?: boolean;
+  en_gaceta?: boolean;
+  titulo_entregado_graduado?: boolean;
+  titulo_anulado?: boolean;
+  titulo_rechazado?: boolean;
+  otro?: boolean;
   pendiente?: boolean;
+  en_revision?: boolean;
+  revisado?: boolean;
+  validado?: boolean;
+  entregado_estudiante?: boolean;
+  fecha_inicio_sla?: string;
+  fecha_limite_sla?: string;
+  otro_descripcion?: string;
+  dias_restantes?: number;
+  sla_vencido?: boolean;
+  sla_iniciado?: boolean;
+  finalizado?: boolean;
+  created_at?: string;
+  updated_at?: string;
   titulacion?: Titulacion;
+}
+
+export interface ProcesoStats {
+  total: number;
+  en_tramite: number;
+  en_alerta: number;
+  vencidos: number;
+  finalizados: number;
+  etapas: Record<string, string>;
 }
 
 export interface KPIItem {

@@ -36,6 +36,33 @@ class ProcesoTitulo extends Model
 
     protected $table = 'procesos_titulo';
 
+    protected $appends = [
+        'dias_restantes',
+        'sla_vencido',
+        'sla_iniciado',
+        'finalizado',
+    ];
+
+    public function getDiasRestantesAttribute(): int
+    {
+        return $this->diasRestantes();
+    }
+
+    public function getSlaVencidoAttribute(): bool
+    {
+        return $this->slaVencido();
+    }
+
+    public function getSlaIniciadoAttribute(): bool
+    {
+        return $this->slaIniciado();
+    }
+
+    public function getFinalizadoAttribute(): bool
+    {
+        return $this->finalizado();
+    }
+
     protected function casts(): array
     {
         return [

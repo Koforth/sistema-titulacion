@@ -26,6 +26,7 @@ Route::prefix('v1')->group(function () {
         Route::get('titulaciones', [V1\TitulacionController::class, 'index']);
         Route::get('titulaciones/{titulacion}', [V1\TitulacionController::class, 'show']);
         Route::get('procesos-titulo', [V1\ProcesoTituloController::class, 'index']);
+        Route::get('procesos-titulo/stats', [V1\ProcesoTituloController::class, 'stats']);
         Route::get('procesos-titulo/{proceso}', [V1\ProcesoTituloController::class, 'show']);
         Route::get('titulos-fisicos', [V1\TituloFisicoController::class, 'index']);
         Route::get('titulos-fisicos/disponibles', [V1\TituloFisicoController::class, 'disponibles']);
