@@ -59,6 +59,7 @@ export interface Titulacion {
   graduado?: Graduado;
   proceso?: { id: number } | null;
   titulo_fisico?: TituloFisico | null;
+  tituloFisico?: TituloFisico | null;
 }
 
 export interface TituloFisico {
