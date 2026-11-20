@@ -30,7 +30,7 @@ class LoteImpresionController extends Controller
         $data = $request->validated();
         $lote = $this->loteSvc->enviar($data['titulos'], $data['observaciones'] ?? null);
 
-        return response()->json($lote->load('detalle.tituloFisico'), 201);
+        return response()->json($lote->load('detalle.tituloFisico.titulacion.graduado', 'responsableEnvio'), 201);
     }
 
     public function show(LoteImpresion $lote)
@@ -43,6 +43,6 @@ class LoteImpresionController extends Controller
         $data = $request->validate(['observaciones' => ['nullable', 'string']]);
         $this->loteSvc->registrarRetorno($lote, $data['observaciones'] ?? null);
 
-        return $lote->fresh();
+        return $lote->fresh(['detalle.tituloFisico.titulacion.graduado', 'responsableEnvio', 'responsableRecepcion']);
     }
 }

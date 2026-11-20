@@ -376,3 +376,56 @@ tr:hover td { background: #fbf6f6; }
   .step-tab { font-size: .72rem; padding: .5rem .3rem; }
   .step-tab.active::after { display: none; }
 }
+
+/* ---------- Estilos de Impresión Oficial (@media print) ---------- */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body::before {
+    display: none !important;
+  }
+  .site-header,
+  .no-print,
+  nav,
+  button,
+  .btn-stepper,
+  .pager,
+  .toolbar,
+  .filter-box,
+  .modal-top-bar,
+  .modal-footer-nav {
+    display: none !important;
+  }
+  .setec-modal-backdrop {
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    display: block !important;
+    backdrop-filter: none !important;
+  }
+  .setec-modal.printable-remision {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .modal-content-body.print-area {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  @page {
+    size: letter portrait;
+    margin: 1.2cm 1cm;
+  }
+}
+

@@ -78,17 +78,40 @@ export interface TituloFisico {
 export interface Historial {
   id: number;
   accion?: string;
+  tipo_evento?: string;
+  fecha?: string;
   descripcion?: string;
   created_at: string;
   usuario?: { name: string } | null;
 }
 
+export interface LoteDetalle {
+  id: number;
+  lote_impresion_id?: number;
+  lote_setec_id?: number;
+  titulo_fisico_id: number;
+  estado?: string;
+  observacion?: string;
+  fecha_certificacion?: string;
+  titulo_fisico?: TituloFisico;
+  tituloFisico?: TituloFisico;
+}
+
 export interface Lote {
   id: number;
   numero_lote: string;
+  fecha_envio?: string;
+  fecha_retorno?: string;
+  responsable_envio_id?: number;
+  responsable_recepcion_id?: number;
+  responsable_envio?: User;
+  responsable_recepcion?: User;
+  responsableEnvio?: User;
+  responsableRecepcion?: User;
   estado?: string;
+  observaciones?: string;
   created_at: string;
-  detalle?: { id: number; estado?: string; titulo_fisico?: TituloFisico }[];
+  detalle?: LoteDetalle[];
 }
 
 export interface Proceso {
