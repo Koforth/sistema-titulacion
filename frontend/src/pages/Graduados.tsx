@@ -154,7 +154,7 @@ export default function Graduados() {
   const consultarApiExterna = async (e?: FormEvent) => {
     if (e) e.preventDefault();
     if (!academicQuery.trim()) {
-      setAcademicStatusMsg({ kind: 'error', text: 'Ingrese un número de cédula o carnet para consultar.' });
+      setAcademicStatusMsg({ kind: 'error', text: 'Ingrese un número de cédula o código del MINED para consultar.' });
       return;
     }
     setSearchingAcademic(true);
@@ -288,8 +288,8 @@ export default function Graduados() {
         name === 'nombres'
           ? `${value} ${prev.apellidos}`.trim()
           : name === 'apellidos'
-          ? `${prev.nombres} ${value}`.trim()
-          : prev.nombre_completo,
+            ? `${prev.nombres} ${value}`.trim()
+            : prev.nombre_completo,
     }));
   };
 
@@ -593,7 +593,7 @@ export default function Graduados() {
                             {g.cedula ? (
                               <span>Cédula de Identidad Nicaragüense : <b>{g.cedula}</b></span>
                             ) : g.carnet ? (
-                              <span>Carnet : <b>{g.carnet}</b></span>
+                              <span>Cód. MINED : <b>{g.carnet}</b></span>
                             ) : (
                               <span className="muted">Sin documento</span>
                             )}
@@ -671,7 +671,11 @@ export default function Graduados() {
             </div>
             <div className="summary-field">
               <label>Documento de Identidad</label>
-              <input type="text" readOnly value={selectedGraduado.cedula || selectedGraduado.carnet || '—'} />
+              <input type="text" readOnly value={selectedGraduado.cedula || '—'} />
+            </div>
+            <div className="summary-field">
+              <label>Código del MINED</label>
+              <input type="text" readOnly value={selectedGraduado.carnet || '—'} />
             </div>
             <div className="summary-field">
               <label>Sexo</label>
@@ -790,12 +794,12 @@ export default function Graduados() {
                     <div className="academic-search-box">
                       <div className="academic-search-header">
                         <strong>🌐 Consultar en API Académica Externa</strong>
-                        <small className="muted">Autocompletar datos del estudiante por Cédula o Carnet</small>
+                        <small className="muted">Autocompletar datos del estudiante por Cédula o Código del MINED</small>
                       </div>
                       <div className="academic-search-input-group">
                         <input
                           type="text"
-                          placeholder="Ingrese Cédula (Ej. 441-230600-1010G) o Carnet..."
+                          placeholder="Ingrese Cédula (Ej. 441-230600-1010G) o Código del MINED..."
                           value={academicQuery}
                           onChange={(e) => setAcademicQuery(e.target.value)}
                           onKeyDown={(e) => {
@@ -978,8 +982,8 @@ export default function Graduados() {
                       <input type="text" name="anio_bachillerato" placeholder="Ej. 2018" value={formGraduado.anio_bachillerato} onChange={handleGraduadoChange} />
                     </div>
                     <div className="form-field">
-                      <label>Código de Estudiante / Carnet *</label>
-                      <input type="text" name="carnet" placeholder="Ej. 22-01928-0" value={formGraduado.carnet} onChange={handleGraduadoChange} required />
+                      <label>Código del MINED *</label>
+                      <input type="text" name="carnet" placeholder="Código de Estudiante emitido por el MINED" value={formGraduado.carnet} onChange={handleGraduadoChange} required />
                     </div>
                     <div className="form-field">
                       <label>Tipo de Bachillerato *</label>
