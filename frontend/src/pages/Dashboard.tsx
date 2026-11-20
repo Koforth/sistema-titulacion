@@ -184,7 +184,7 @@ export default function Dashboard() {
                     <div className="bar-track">
                       <div
                         className="bar-fill"
-                        style={{ width: `${porcentaje}%`, backgroundColor: '#3b82f6' }}
+                        style={{ width: `${porcentaje}%` }}
                       ></div>
                     </div>
                   </div>

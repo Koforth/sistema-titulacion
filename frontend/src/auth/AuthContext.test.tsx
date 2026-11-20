@@ -9,7 +9,7 @@ afterEach(() => { vi.restoreAllMocks(); sessionStorage.clear(); });
 describe('Rutas protegidas', () => {
   it('redirige a login cuando no hay sesión', async () => {
     render(<MemoryRouter initialEntries={['/graduados']}><AuthProvider><App /></AuthProvider></MemoryRouter>);
-    await waitFor(() => expect(screen.getByText('Iniciar sesión')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Iniciar sesión/)).toBeInTheDocument());
   });
 
   it('la consulta pública no requiere sesión', async () => {

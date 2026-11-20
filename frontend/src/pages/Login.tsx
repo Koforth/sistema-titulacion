@@ -32,9 +32,9 @@ export default function Login() {
     <div className="login-wrapper">
       <form className="card login-card" onSubmit={submit} aria-labelledby="login-title">
         <div className="login-header">
-          <strong className="login-brand">SIGTU</strong>
-          <h1 id="login-title">Iniciar sesión</h1>
-          <p className="muted">Sistema Integral de Gestión de Títulos Universitarios</p>
+          <img src="/logo-uncpggl.png" alt="Escudo UNCPGGL" className="login-logo" />
+          <h1 id="login-title">SIGTU · Iniciar sesión</h1>
+          <p className="muted">Gestión de Títulos Universitarios</p>
         </div>
 
         {error && <Alert>{error}</Alert>}

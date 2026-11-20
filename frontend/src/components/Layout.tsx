@@ -30,7 +30,10 @@ export default function Layout() {
 
       <header role="banner" className="site-header">
         <div className="header-top">
-          <strong className="header-brand">SIGTU</strong>
+          <strong className="header-brand">
+            <img src="/logo-uncpggl.png" alt="" className="header-logo" aria-hidden="true" />
+            SIGTU
+          </strong>
 
           {/* Botón hamburguesa accesible para móvil */}
           <button

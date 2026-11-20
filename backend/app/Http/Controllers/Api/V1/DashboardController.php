@@ -56,10 +56,10 @@ class DashboardController extends Controller
 
         // Gráfico 1: Títulos por Ubicación Física (Donut / Pie)
         $ubicaciones = [
-            ['name' => 'En León', 'value' => $count('LEON'), 'color' => '#3b82f6'],
-            ['name' => 'En Imprenta', 'value' => $count('IMPRENTA'), 'color' => '#f97316'],
-            ['name' => 'En SETEC', 'value' => $count('SETEC'), 'color' => '#a855f7'],
-            ['name' => 'Entregados', 'value' => $entregados, 'color' => '#22c55e'],
+            ['name' => 'En León', 'value' => $count('LEON'), 'color' => '#7a1c1c'],
+            ['name' => 'En Imprenta', 'value' => $count('IMPRENTA'), 'color' => '#d4a017'],
+            ['name' => 'En SETEC', 'value' => $count('SETEC'), 'color' => '#64748b'],
+            ['name' => 'Entregados', 'value' => $entregados, 'color' => '#15803d'],
         ];
 
         // Gráfico 2: Top Carreras con más Titulaciones (Barras)
