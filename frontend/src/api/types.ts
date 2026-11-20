@@ -207,7 +207,19 @@ export interface TituloPublico {
   uuid: string;
   numero_titulo: string;
   estado: string;
+  estado_label?: string;
+  ubicacion_actual?: string;
   graduado?: string;
+  cedula_enmascarada?: string | null;
   carrera?: string;
-  fecha_titulacion?: string;
+  titulo_obtenido?: string;
+  sede?: string;
+  tomo?: string;
+  folio?: string;
+  registrado_no?: string;
+  fecha_emision_titulo?: string;
+  fecha_registro_setec?: string;
+  qr?: string;
+  sello_seguridad?: string;
+  fecha_consulta?: string;
 }

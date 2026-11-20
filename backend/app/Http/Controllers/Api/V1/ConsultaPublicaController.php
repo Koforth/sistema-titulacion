@@ -11,22 +11,43 @@ class ConsultaPublicaController extends Controller
 {
     public function estadisticas(): array
     {
+        $total = TituloFisico::count();
+        $emitidos = TituloFisico::where('ubicacion_actual', 'ENTREGADO')->count();
         return [
-            'titulos_emitidos' => TituloFisico::where('ubicacion_actual', 'ENTREGADO')->count(),
-            'total_registrados' => TituloFisico::count(),
+            'titulos_emitidos' => $emitidos,
+            'total_registrados' => $total,
+            'titulos_en_tramite' => max(0, $total - $emitidos),
         ];
     }
 
     public function buscar(Request $request)
     {
         $data = $request->validate(['q' => ['required', 'string', 'min:3', 'max:100']]);
-        $q = $data['q'];
+        $q = trim($data['q']);
+        $qLimpia = preg_replace('/[^A-Za-z0-9]/', '', $q);
 
         $titulos = TituloFisico::with('titulacion.graduado')
-            ->where('ubicacion_actual', 'ENTREGADO')
-            ->where(fn ($w) => $w->where('numero_titulo', 'like', "%{$q}%")
-                ->orWhereHas('titulacion.graduado', fn ($g) => $g->where('nombre_completo', 'like', "%{$q}%")))
-            ->limit(25)
+            ->where(function ($w) use ($q, $qLimpia) {
+                $w->where('numero_titulo', 'like', "%{$q}%")
+                  ->orWhere('uuid', 'like', "%{$q}%")
+                  ->orWhere('folio', 'like', "%{$q}%")
+                  ->orWhereHas('titulacion', function ($t) use ($q, $qLimpia) {
+                      $t->where('registrado_no', 'like', "%{$q}%")
+                        ->orWhere('carrera', 'like', "%{$q}%")
+                        ->orWhere('titulo_obtenido', 'like', "%{$q}%")
+                        ->orWhereHas('graduado', function ($g) use ($q, $qLimpia) {
+                            $g->where('nombre_completo', 'like', "%{$q}%")
+                              ->orWhere('nombres', 'like', "%{$q}%")
+                              ->orWhere('apellidos', 'like', "%{$q}%")
+                              ->orWhere('carnet', 'like', "%{$q}%")
+                              ->orWhere('cedula', 'like', "%{$q}%")
+                              ->when(!empty($qLimpia), function ($query) use ($qLimpia) {
+                                  $query->orWhereRaw("REPLACE(REPLACE(cedula, '-', ''), ' ', '') LIKE ?", ["%{$qLimpia}%"]);
+                              });
+                        });
+                  });
+            })
+            ->limit(20)
             ->get();
 
         return TituloPublicoResource::collection($titulos);
@@ -34,8 +55,11 @@ class ConsultaPublicaController extends Controller
 
     public function verificar(string $uuid): TituloPublicoResource
     {
-        return new TituloPublicoResource(
-            TituloFisico::with('titulacion.graduado')->where('uuid', $uuid)->firstOrFail()
-        );
+        $titulo = TituloFisico::with('titulacion.graduado')
+            ->where('uuid', $uuid)
+            ->orWhere('numero_titulo', $uuid)
+            ->firstOrFail();
+
+        return new TituloPublicoResource($titulo);
     }
 }
