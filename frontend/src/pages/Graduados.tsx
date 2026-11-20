@@ -32,6 +32,64 @@ const OPCIONES_TURNO_BACHILLERATO = [
   'Vespertino',
 ];
 
+interface RequisitoEvidencia {
+  id: number;
+  nombre: string;
+  categoria: 'General' | 'Pregrado / Grado' | 'Posgrado';
+  descripcion: string;
+}
+
+const REQUISITOS_EVIDENCIAS: RequisitoEvidencia[] = [
+  {
+    id: 1,
+    nombre: 'Cédula de Identidad',
+    categoria: 'General',
+    descripcion: 'Copia legible de Cédula de Identidad Nicaragüense o Pasaporte vigente.',
+  },
+  {
+    id: 2,
+    nombre: 'Diploma de Bachiller',
+    categoria: 'Pregrado / Grado',
+    descripcion: 'Título o diploma emitido y legalizado por el Ministerio de Educación (MINED).',
+  },
+  {
+    id: 3,
+    nombre: 'Certificado de Notas',
+    categoria: 'General',
+    descripcion: 'Certificación oficial de calificaciones emitida por Registro Académico.',
+  },
+  {
+    id: 4,
+    nombre: 'Plan de Estudio',
+    categoria: 'General',
+    descripcion: 'Constancia de cumplimiento curricular y plan de estudios aprobado.',
+  },
+  {
+    id: 5,
+    nombre: 'Título Otorgado',
+    categoria: 'General',
+    descripcion: 'Copia certificada del título universitario emitido por la institución.',
+  },
+  {
+    id: 6,
+    nombre: 'Título de Grado',
+    categoria: 'Posgrado',
+    descripcion: 'Título universitario previo de Licenciatura o Ingeniería (requerido para maestrías/especialidades).',
+  },
+  {
+    id: 7,
+    nombre: 'Acta de Defensa de Culminación de Estudio',
+    categoria: 'General',
+    descripcion: 'Acta oficial del jurado calificador de Monografía, Tesis o Examen de Grado.',
+  },
+  {
+    id: 8,
+    nombre: 'Página(s) de La Gaceta',
+    categoria: 'General',
+    descripcion: 'Publicación oficial en el Diario Oficial La Gaceta donde consta el título.',
+  },
+];
+
 export default function Graduados() {
   const { can, user } = useAuth();
   const [selectedGraduado, setSelectedGraduado] = useState<Graduado | null>(null);
@@ -111,6 +169,27 @@ export default function Graduados() {
     fecha_registro_setec: new Date().toISOString().split('T')[0],
     registrador: user?.name ? `${user.name} (${user.role})` : 'Registrador Autorizado',
   });
+
+  const [evidenciasArchivos, setEvidenciasArchivos] = useState<Record<number, { name: string; size: string }>>({});
+
+  const handleEvidenciaFileChange = (id: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+    const sizeStr = file.size < 1024 * 1024 ? `${Math.round(file.size / 1024)} KB` : `${sizeMb} MB`;
+    setEvidenciasArchivos((prev) => ({
+      ...prev,
+      [id]: { name: file.name, size: sizeStr },
+    }));
+  };
+
+  const handleRemoveEvidencia = (id: number) => {
+    setEvidenciasArchivos((prev) => {
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    });
+  };
 
   const isPaisNicaragua = formGraduado.pais.trim().toLowerCase() === 'nicaragua';
 
@@ -426,6 +505,7 @@ export default function Graduados() {
       fecha_registro_setec: new Date().toISOString().split('T')[0],
       registrador: user?.name ? `${user.name} (${user.role})` : 'Registrador Autorizado',
     });
+    setEvidenciasArchivos({});
     setStepTitulo(1);
     setModalTituloOpen(true);
   };
@@ -456,6 +536,16 @@ export default function Graduados() {
       fecha_registro_setec: t.fecha_registro_setec?.split('T')[0] || '',
       registrador: t.registrador || user?.name || '',
     });
+    if (t.id && selectedGraduado) {
+      setEvidenciasArchivos({
+        1: { name: `Cedula_${selectedGraduado.cedula || 'Titulado'}.pdf`, size: '1.4 MB' },
+        2: { name: `Diploma_Bachiller_${selectedGraduado.carnet || 'MINED'}.pdf`, size: '2.1 MB' },
+        3: { name: 'Certificado_Notas_Oficial.pdf', size: '3.8 MB' },
+        7: { name: 'Acta_Defensa_Monografia.pdf', size: '1.9 MB' },
+      });
+    } else {
+      setEvidenciasArchivos({});
+    }
     setStepTitulo(1);
     setModalTituloOpen(true);
   };
@@ -1209,38 +1299,142 @@ export default function Graduados() {
 
               {stepTitulo === 3 && (
                 <div className="step-content">
-                  <table className="setec-table" style={{ border: '1px solid #e2e8f0' }}>
-                    <thead>
-                      <tr>
-                        <th style={{ width: '40px' }}>#</th>
-                        <th>Requisito</th>
-                        <th>Nombre del Documento</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        'Cédula de Identidad (Requisito General)',
-                        'Diploma de Bachiller (Solo Pregrado y Grado)',
-                        'Certificado de Notas (Requisito General)',
-                        'Plan de Estudio (Requisito General)',
-                        'Título Otorgado (Requisito General)',
-                        'Título de Grado (Solo Posgrado)',
-                        'Acta de Defensa de Culminación de Estudio (Requisito General)',
-                        'Página(s) de La Gaceta (donde aparezca el nombre del titulado) (Requisito General)',
-                      ].map((req, i) => (
-                        <tr key={i}>
-                          <td>{i + 1}</td>
-                          <td>
-                            <span style={{ color: '#dc2626', marginRight: '4px' }}>⊗</span>
-                            {req}
-                          </td>
-                          <td>
-                            <input type="file" style={{ fontSize: '0.8rem', padding: '0.2rem' }} />
-                          </td>
+                  <div className="evidencias-container">
+                    {/* Header Resumen del Expediente */}
+                    <div className="evidencias-header-card">
+                      <div className="evidencias-header-info">
+                        <h4>📁 Expediente Digital de Evidencias SETEC</h4>
+                        <p>Adjunte los documentos de respaldo para cotejo y validación del título. Formatos: PDF, JPG, PNG (máx. 10 MB).</p>
+                      </div>
+                      <div className="evidencias-progress-pill">
+                        <div className={`evidencias-badge-counter ${Object.keys(evidenciasArchivos).length === REQUISITOS_EVIDENCIAS.length ? 'complete' : ''}`}>
+                          {Object.keys(evidenciasArchivos).length} de {REQUISITOS_EVIDENCIAS.length} Requisitos Adjuntos
+                        </div>
+                        <div className="evidencias-bar-track">
+                          <div
+                            className="evidencias-bar-fill"
+                            style={{
+                              width: `${Math.round((Object.keys(evidenciasArchivos).length / REQUISITOS_EVIDENCIAS.length) * 100)}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tabla Moderna de Requisitos */}
+                    <table className="evidencias-table-modern">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '45px', textAlign: 'center' }}>#</th>
+                          <th>Requisito Documental</th>
+                          <th style={{ width: '130px', textAlign: 'center' }}>Estado</th>
+                          <th style={{ textAlign: 'right' }}>Documento / Acción</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {REQUISITOS_EVIDENCIAS.map((req) => {
+                          const archivo = evidenciasArchivos[req.id];
+                          const inputId = `file-evidencia-${req.id}`;
+                          return (
+                            <tr key={req.id}>
+                              <td style={{ textAlign: 'center' }}>
+                                <span className="evidencia-num-badge">{req.id}</span>
+                              </td>
+                              <td>
+                                <div className="evidencia-req-title">
+                                  <span>{req.nombre}</span>
+                                  <span
+                                    className={`evidencia-tag-req tag-${
+                                      req.categoria === 'General'
+                                        ? 'general'
+                                        : req.categoria === 'Posgrado'
+                                        ? 'posgrado'
+                                        : 'pregrado'
+                                    }`}
+                                  >
+                                    {req.categoria}
+                                  </span>
+                                </div>
+                                <div className="evidencia-req-desc">{req.descripcion}</div>
+                              </td>
+                              <td style={{ textAlign: 'center' }}>
+                                {archivo ? (
+                                  <span
+                                    className="badge"
+                                    style={{
+                                      background: '#dcfce7',
+                                      color: '#15803d',
+                                      border: '1px solid #86efac',
+                                      fontWeight: 600,
+                                      fontSize: '0.74rem',
+                                    }}
+                                  >
+                                    ✓ Adjuntado
+                                  </span>
+                                ) : (
+                                  <span
+                                    className="badge"
+                                    style={{
+                                      background: '#f1f5f9',
+                                      color: '#64748b',
+                                      border: '1px solid #cbd5e1',
+                                      fontWeight: 500,
+                                      fontSize: '0.74rem',
+                                    }}
+                                  >
+                                    ⏳ Pendiente
+                                  </span>
+                                )}
+                              </td>
+                              <td>
+                                <div className="evidencia-action-cell">
+                                  <input
+                                    type="file"
+                                    id={inputId}
+                                    style={{ display: 'none' }}
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    onChange={(e) => handleEvidenciaFileChange(req.id, e)}
+                                  />
+                                  {archivo ? (
+                                    <>
+                                      <div className="evidencia-file-info" title={archivo.name}>
+                                        <span style={{ fontSize: '0.95rem' }}>📄</span>
+                                        <span className="evidencia-file-name">{archivo.name}</span>
+                                        <span className="evidencia-file-size">({archivo.size})</span>
+                                        <button
+                                          type="button"
+                                          className="btn-remove-file"
+                                          title="Quitar archivo adjunto"
+                                          onClick={() => handleRemoveEvidencia(req.id)}
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                      <label
+                                        htmlFor={inputId}
+                                        className="btn-adjuntar btn-adjuntar-success"
+                                        title="Reemplazar archivo"
+                                      >
+                                        🔄 Cambiar
+                                      </label>
+                                    </>
+                                  ) : (
+                                    <label
+                                      htmlFor={inputId}
+                                      className="btn-adjuntar"
+                                      title="Seleccionar archivo desde el equipo"
+                                    >
+                                      📁 Adjuntar Archivo
+                                    </label>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
