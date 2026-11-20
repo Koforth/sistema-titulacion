@@ -227,9 +227,11 @@ tr:hover td { background: #fbf6f6; }
 .kpi-orange .kpi-icon { background: var(--gold-soft); }
 .kpi-green .kpi-icon { background: var(--success-soft); }
 .kpi-red .kpi-icon { background: var(--danger-soft); }
-.kpi-body { display: flex; flex-direction: column; }
+.kpi-body, .kpi-info { display: flex; flex-direction: column; gap: 2px; }
 .kpi-label { font-size: .72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
-.kpi-value { font-size: 1.6rem; color: #1b1f27; line-height: 1.15; }
+.kpi-value { font-size: 1.6rem; font-weight: 800; color: #1b1f27; line-height: 1.15; margin: 2px 0; }
+.kpi-green .kpi-value { color: var(--success); }
+.kpi-orange .kpi-value { color: var(--gold-text); }
 .kpi-red .kpi-value { color: var(--danger); }
 .kpi-subtext { font-size: .76rem; color: var(--text-muted); }
 

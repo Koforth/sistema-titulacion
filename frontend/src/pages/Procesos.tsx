@@ -197,39 +197,39 @@ export default function Procesos() {
       {stats && (
         <div className="kpis-grid" style={{ marginBottom: '1.2rem' }}>
           <div className="kpi-card" onClick={() => setFiltroEstado('todos')} style={{ cursor: 'pointer' }}>
-            <div className="kpi-icon orange">📋</div>
-            <div className="kpi-info">
+            <div className="kpi-icon">📋</div>
+            <div className="kpi-body">
               <span className="kpi-label">Total en Trámite</span>
-              <span className="kpi-value">{stats.en_tramite}</span>
+              <b className="kpi-value">{stats.en_tramite}</b>
               <span className="kpi-subtext">{stats.total} expedientes históricos</span>
             </div>
           </div>
 
-          <div className="kpi-card" onClick={() => setFiltroEstado('en_tiempo')} style={{ cursor: 'pointer' }}>
-            <div className="kpi-icon green">⏱️</div>
-            <div className="kpi-info">
+          <div className="kpi-card kpi-green" onClick={() => setFiltroEstado('en_tiempo')} style={{ cursor: 'pointer' }}>
+            <div className="kpi-icon">⏱️</div>
+            <div className="kpi-body">
               <span className="kpi-label">En Tiempo (SLA Normal)</span>
-              <span className="kpi-value" style={{ color: 'var(--success)' }}>
+              <b className="kpi-value">
                 {Math.max(0, stats.en_tramite - stats.en_alerta - stats.vencidos)}
-              </span>
+              </b>
               <span className="kpi-subtext">&gt; 10 días restantes</span>
             </div>
           </div>
 
-          <div className="kpi-card" onClick={() => setFiltroEstado('proximo_vencer')} style={{ cursor: 'pointer' }}>
-            <div className="kpi-icon" style={{ background: 'var(--gold-soft)', color: 'var(--gold-text)' }}>⚠️</div>
-            <div className="kpi-info">
+          <div className="kpi-card kpi-orange" onClick={() => setFiltroEstado('proximo_vencer')} style={{ cursor: 'pointer' }}>
+            <div className="kpi-icon">⚠️</div>
+            <div className="kpi-body">
               <span className="kpi-label">En Alerta Preventiva</span>
-              <span className="kpi-value" style={{ color: 'var(--gold-text)' }}>{stats.en_alerta}</span>
+              <b className="kpi-value">{stats.en_alerta}</b>
               <span className="kpi-subtext">&le; 10 días para vencer</span>
             </div>
           </div>
 
-          <div className="kpi-card" onClick={() => setFiltroEstado('vencido')} style={{ cursor: 'pointer' }}>
-            <div className="kpi-icon red">🚨</div>
-            <div className="kpi-info">
+          <div className="kpi-card kpi-red" onClick={() => setFiltroEstado('vencido')} style={{ cursor: 'pointer' }}>
+            <div className="kpi-icon">🚨</div>
+            <div className="kpi-body">
               <span className="kpi-label">SLA Vencido</span>
-              <span className="kpi-value" style={{ color: 'var(--danger)' }}>{stats.vencidos}</span>
+              <b className="kpi-value">{stats.vencidos}</b>
               <span className="kpi-subtext">Plazo &gt; 45 días superado</span>
             </div>
           </div>
