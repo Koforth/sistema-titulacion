@@ -11,6 +11,27 @@ import {
   getMunicipiosDeDepartamento,
 } from '../data/geoData';
 
+const OPCIONES_TIPO_BACHILLERATO = ['Bachiller'];
+
+const OPCIONES_MODALIDAD_BACHILLERATO = [
+  'Ciencias y Letras',
+  'Preparatoria',
+  'Técnico',
+  'Ciclo Diversificado',
+  'No Definido',
+];
+
+const OPCIONES_TURNO_BACHILLERATO = [
+  'Diurno',
+  'Dominical',
+  'Encuentro',
+  'Matutino',
+  'No Definido',
+  'Nocturno',
+  'Sabatino',
+  'Vespertino',
+];
+
 export default function Graduados() {
   const { can, user } = useAuth();
   const [selectedGraduado, setSelectedGraduado] = useState<Graduado | null>(null);
@@ -56,9 +77,9 @@ export default function Graduados() {
     linea_telefonica: 'Claro',
     anio_bachillerato: '2020',
     codigo_estudiante: '',
-    tipo_bachillerato: 'Regular',
+    tipo_bachillerato: 'Bachiller',
     turno_bachillerato: 'Matutino',
-    modalidad_bachillerato: 'Presencial',
+    modalidad_bachillerato: 'Ciencias y Letras',
   });
 
   // Modal 2: Crear / Editar Título (Titulaciones)
@@ -237,9 +258,9 @@ export default function Graduados() {
       linea_telefonica: 'Claro',
       anio_bachillerato: '2020',
       codigo_estudiante: '',
-      tipo_bachillerato: 'Regular',
+      tipo_bachillerato: 'Bachiller',
       turno_bachillerato: 'Matutino',
-      modalidad_bachillerato: 'Presencial',
+      modalidad_bachillerato: 'Ciencias y Letras',
     });
     setStepGraduado(1);
     setModalGraduadoOpen(true);
@@ -271,9 +292,9 @@ export default function Graduados() {
       linea_telefonica: 'Claro',
       anio_bachillerato: g.anio_bachillerato || '2020',
       codigo_estudiante: g.carnet || '',
-      tipo_bachillerato: g.tipo_bachillerato || 'Regular',
+      tipo_bachillerato: g.tipo_bachillerato || 'Bachiller',
       turno_bachillerato: g.turno_bachillerato || 'Matutino',
-      modalidad_bachillerato: g.modalidad_bachillerato || 'Presencial',
+      modalidad_bachillerato: g.modalidad_bachillerato || 'Ciencias y Letras',
     });
     setStepGraduado(1);
     setModalGraduadoOpen(true);
@@ -990,7 +1011,7 @@ export default function Graduados() {
                       <SearchableSelect
                         name="tipo_bachillerato"
                         value={formGraduado.tipo_bachillerato}
-                        options={['Regular', 'Técnico', 'Por Madurez']}
+                        options={OPCIONES_TIPO_BACHILLERATO}
                         onChange={(val) => handleGraduadoSelectChange('tipo_bachillerato', val)}
                       />
                     </div>
@@ -999,7 +1020,7 @@ export default function Graduados() {
                       <SearchableSelect
                         name="turno_bachillerato"
                         value={formGraduado.turno_bachillerato}
-                        options={['Matutino', 'Vespertino', 'Sabatino', 'Dominical', 'Nocturno']}
+                        options={OPCIONES_TURNO_BACHILLERATO}
                         onChange={(val) => handleGraduadoSelectChange('turno_bachillerato', val)}
                       />
                     </div>
@@ -1008,7 +1029,7 @@ export default function Graduados() {
                       <SearchableSelect
                         name="modalidad_bachillerato"
                         value={formGraduado.modalidad_bachillerato}
-                        options={['Presencial', 'A Distancia', 'Virtual']}
+                        options={OPCIONES_MODALIDAD_BACHILLERATO}
                         onChange={(val) => handleGraduadoSelectChange('modalidad_bachillerato', val)}
                       />
                     </div>
