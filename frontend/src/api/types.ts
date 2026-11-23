@@ -56,6 +56,7 @@ export interface Titulacion {
   fecha_titulacion?: string;
   modalidad?: string;
   estado?: string;
+  evidencias?: Record<string | number, { name: string; size: string }>;
   graduado?: Graduado;
   proceso?: { id: number } | null;
   titulo_fisico?: TituloFisico | null;
@@ -203,6 +204,17 @@ export interface Dashboard {
   servidor_tiempo?: string;
 }
 
+export interface EvidenciaDocumental {
+  id: number;
+  requisito: string;
+  categoria: string;
+  icono: string;
+  nombre_archivo: string;
+  size: string;
+  disponible: boolean;
+  tipo: string;
+}
+
 export interface TituloPublico {
   uuid: string;
   numero_titulo: string;
@@ -222,4 +234,6 @@ export interface TituloPublico {
   qr?: string;
   sello_seguridad?: string;
   fecha_consulta?: string;
+  evidencias?: EvidenciaDocumental[];
+  total_evidencias?: number;
 }

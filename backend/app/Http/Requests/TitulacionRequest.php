@@ -40,6 +40,7 @@ class TitulacionRequest extends FormRequest
             'fecha_titulacion' => ['nullable', 'date'],
             'modalidad' => ['nullable', 'string', 'max:191'],
             'estado' => ['nullable', 'string', 'max:50'],
+            'evidencias' => ['nullable', 'array'],
         ];
     }
 }

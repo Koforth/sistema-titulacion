@@ -1262,5 +1262,360 @@ tr:hover td { background: #fbf6f6; }
   }
 }
 
+/* ==========================================================================
+   Evidencias Documentales y Visor de PDF en Consulta Pública
+   ========================================================================== */
+.cert-evidencias-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.2rem;
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.cert-evidencias-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.6rem;
+}
+
+.cert-evidencias-header h4 {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cert-evidencias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.85rem;
+}
+
+.evidencia-doc-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.6rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  transition: all 0.15s ease;
+}
+
+.evidencia-doc-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06);
+}
+
+.evidencia-doc-card.disabled {
+  opacity: 0.6;
+  background: #fafafa;
+}
+
+.evidencia-doc-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.evidencia-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #991b1b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.evidencia-doc-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.evidencia-doc-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.evidencia-doc-file {
+  font-size: 0.72rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.evidencia-doc-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.btn-evidencia-view {
+  flex: 1;
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  transition: all 0.15s ease;
+  min-height: auto;
+}
+
+.btn-evidencia-view:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.btn-evidencia-download {
+  background: #fff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  min-height: auto;
+}
+
+.btn-evidencia-download:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* Modal Visor de PDF */
+.pdf-viewer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.pdf-viewer-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 860px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+
+.pdf-viewer-topbar {
+  background: #1e293b;
+  color: #fff;
+  padding: 0.65rem 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  border-bottom: 2px solid var(--gold);
+}
+
+.pdf-viewer-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pdf-viewer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-pdf-action {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: auto;
+  transition: background 0.15s ease;
+}
+
+.btn-pdf-action:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.btn-pdf-close {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.1rem 0.4rem;
+  min-height: auto;
+  line-height: 1;
+}
+
+.btn-pdf-close:hover {
+  color: #ef4444;
+}
+
+.pdf-viewer-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #525659;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pdf-document-sheet {
+  background: #fff;
+  width: 100%;
+  max-width: 680px;
+  min-height: 780px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  padding: 2.2rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #d1d5db;
+}
+
+.pdf-sheet-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-35deg);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: rgba(122, 28, 28, 0.06);
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  user-select: none;
+}
+
+.pdf-sheet-header {
+  text-align: center;
+  border-bottom: 2px solid #7a1c1c;
+  padding-bottom: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.pdf-sheet-header h3 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #7a1c1c;
+  margin: 0.2rem 0;
+  letter-spacing: 0.02em;
+}
+
+.pdf-sheet-header p {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.pdf-sheet-title-badge {
+  background: #fdf6dc;
+  border: 1px solid #d4a017;
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+.pdf-sheet-title-badge h2 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #7a5a05;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pdf-sheet-body-content {
+  flex: 1;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: #1f2937;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.pdf-sheet-footer-signatures {
+  margin-top: 2rem;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.pdf-signature-line {
+  border-top: 1px solid #0f172a;
+  width: 170px;
+  text-align: center;
+  padding-top: 0.3rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
 
 

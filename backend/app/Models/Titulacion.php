@@ -37,6 +37,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'fecha_titulacion',
     'modalidad',
     'estado',
+    'evidencias',
 ])]
 class Titulacion extends Model
 {
@@ -53,6 +54,7 @@ class Titulacion extends Model
             'fecha_gaceta' => 'date',
             'fecha_registro_setec' => 'date',
             'acceso_internet' => 'boolean',
+            'evidencias' => 'array',
         ];
     }
 

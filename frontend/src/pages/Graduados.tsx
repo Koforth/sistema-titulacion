@@ -536,7 +536,9 @@ export default function Graduados() {
       fecha_registro_setec: t.fecha_registro_setec?.split('T')[0] || '',
       registrador: t.registrador || user?.name || '',
     });
-    if (t.id && selectedGraduado) {
+    if (t.evidencias && Object.keys(t.evidencias).length > 0) {
+      setEvidenciasArchivos(t.evidencias as any);
+    } else if (t.id && selectedGraduado) {
       setEvidenciasArchivos({
         1: { name: `Cedula_${selectedGraduado.cedula || 'Titulado'}.pdf`, size: '1.4 MB' },
         2: { name: `Diploma_Bachiller_${selectedGraduado.carnet || 'MINED'}.pdf`, size: '2.1 MB' },
@@ -569,6 +571,7 @@ export default function Graduados() {
         graduado_id: selectedGraduado.id,
         titulo_obtenido: formTitulo.titulo_obtenido || formTitulo.carrera,
         fecha_titulacion: formTitulo.fecha_emision_titulo,
+        evidencias: evidenciasArchivos,
       };
 
       if (editingTitulacion) {
