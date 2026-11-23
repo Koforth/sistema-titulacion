@@ -183,7 +183,7 @@ export function ConsultaHome() {
                         {t.cedula_enmascarada && <span><b>Cédula:</b> {t.cedula_enmascarada}</span>}
                         <span><b>N.º Registro:</b> {t.numero_titulo}</span>
                         <span><b>Sede:</b> {t.sede || 'León'}</span>
-                        {t.fecha_emision_titulo && <span><b>Emisión:</b> {t.fecha_emision_titulo}</span>}
+                        {t.fecha_emision_titulo && <span><b>Emisión:</b> {t.fecha_emision_titulo.includes('T') ? t.fecha_emision_titulo.split('T')[0] : t.fecha_emision_titulo}</span>}
                         {Boolean(t.total_evidencias && t.total_evidencias > 0) && (
                           <span style={{ color: '#b45309', fontWeight: 600 }}>
                             📄 <b>{t.total_evidencias}</b> {t.total_evidencias === 1 ? 'Documento' : 'Documentos'} en Expediente
@@ -368,7 +368,14 @@ export function Verificar() {
                 </tr>
                 <tr>
                   <th>Número de Título / Registro:</th>
-                  <td><b>{t.numero_titulo}</b></td>
+                  <td>
+                    <b>{t.numero_titulo}</b>
+                    {t.registrado_no && t.registrado_no !== t.numero_titulo && (
+                      <span style={{ marginLeft: '0.6rem', color: '#64748b', fontSize: '0.85rem' }}>
+                        (Reg. N.º <b>{t.registrado_no}</b>)
+                      </span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <th>Tomo y Folio:</th>
@@ -376,7 +383,7 @@ export function Verificar() {
                 </tr>
                 <tr>
                   <th>Fecha de Emisión del Título:</th>
-                  <td>{t.fecha_emision_titulo || '—'}</td>
+                  <td>{t.fecha_emision_titulo ? (t.fecha_emision_titulo.includes('T') ? t.fecha_emision_titulo.split('T')[0] : t.fecha_emision_titulo) : '—'}</td>
                 </tr>
                 {t.fecha_registro_setec && (
                   <tr>

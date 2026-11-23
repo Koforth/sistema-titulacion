@@ -61,7 +61,14 @@ class TitulacionController extends Controller
     {
         $titulacion->update($request->validated());
 
-        return $titulacion->load('graduado');
+        if ($titulacion->tituloFisico) {
+            $titulacion->tituloFisico->update([
+                'tomo' => $titulacion->tomo_registro ?: $titulacion->tituloFisico->tomo,
+                'folio' => $titulacion->folio ?: $titulacion->tituloFisico->folio,
+            ]);
+        }
+
+        return $titulacion->load('graduado', 'tituloFisico');
     }
 
     public function destroy(Titulacion $titulacion): JsonResponse

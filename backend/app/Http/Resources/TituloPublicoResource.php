@@ -65,6 +65,26 @@ class TituloPublicoResource extends JsonResource
             }
         }
 
+        $fechaEmision = $titulacion?->fecha_emision_titulo ?: $titulacion?->fecha_titulacion;
+        $fechaEmisionFormateada = null;
+        if ($fechaEmision) {
+            try {
+                $fechaEmisionFormateada = \Carbon\Carbon::parse($fechaEmision)->format('d/m/Y');
+            } catch (\Exception $e) {
+                $fechaEmisionFormateada = (string) $fechaEmision;
+            }
+        }
+
+        $fechaSetec = $titulacion?->fecha_registro_setec;
+        $fechaSetecFormateada = null;
+        if ($fechaSetec) {
+            try {
+                $fechaSetecFormateada = \Carbon\Carbon::parse($fechaSetec)->format('d/m/Y');
+            } catch (\Exception $e) {
+                $fechaSetecFormateada = (string) $fechaSetec;
+            }
+        }
+
         return [
             'uuid' => $this->uuid,
             'numero_titulo' => $this->numero_titulo,
@@ -76,11 +96,11 @@ class TituloPublicoResource extends JsonResource
             'carrera' => $titulacion?->carrera,
             'titulo_obtenido' => $titulacion?->titulo_obtenido ?: $titulacion?->carrera,
             'sede' => $titulacion?->sede ?: 'Sede Central - León',
-            'tomo' => $this->tomo ?: $titulacion?->tomo_registro ?: 'I',
-            'folio' => $this->folio ?: $titulacion?->folio ?: '—',
+            'tomo' => $titulacion?->tomo_registro ?: $this->tomo ?: 'I',
+            'folio' => $titulacion?->folio ?: $this->folio ?: '—',
             'registrado_no' => $titulacion?->registrado_no ?: $this->numero_titulo,
-            'fecha_emision_titulo' => $titulacion?->fecha_emision_titulo ?: $titulacion?->fecha_titulacion,
-            'fecha_registro_setec' => $titulacion?->fecha_registro_setec,
+            'fecha_emision_titulo' => $fechaEmisionFormateada,
+            'fecha_registro_setec' => $fechaSetecFormateada,
             'qr' => $this->qr,
             'sello_seguridad' => strtoupper(substr(hash('sha256', "UNCPGGL-{$this->uuid}-{$this->numero_titulo}"), 0, 16)),
             'fecha_consulta' => now()->format('d/m/Y H:i:s'),
