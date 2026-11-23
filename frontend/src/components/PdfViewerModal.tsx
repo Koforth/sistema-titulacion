@@ -203,7 +203,11 @@ debidamente validado para efectos legales, académicos y laborales.
             {/* Cabecera del Documento */}
             <div>
               <div className="pdf-sheet-header">
-                <div style={{ fontSize: '2rem', marginBottom: '0.2rem' }}>🏛️</div>
+                <img
+                  src="/logo-uncpggl.png"
+                  alt="Escudo UNCPGGL"
+                  style={{ height: '65px', width: 'auto', objectFit: 'contain', marginBottom: '0.3rem' }}
+                />
                 <h3>UNIVERSIDAD NACIONAL COMANDANTE PADRE GASPAR GARCÍA LAVIANA</h3>
                 <p>República de Nicaragua · SETEC · Secretaría General de Registro</p>
               </div>

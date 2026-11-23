@@ -310,19 +310,16 @@ export function Verificar() {
             <Link to="/" className="btn-back-public">
               ← Realizar otra consulta
             </Link>
-            <button
-              type="button"
-              className="btn-print-certificate"
-              onClick={() => window.print()}
-            >
-              🖨️ Imprimir Constancia Oficial
-            </button>
           </div>
 
           {/* Hoja de Certificación Oficial */}
           <div className="official-certificate-sheet">
             <div className="cert-header">
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.3rem' }}>🏛️</div>
+              <img
+                src="/logo-uncpggl.png"
+                alt="Escudo UNCPGGL"
+                style={{ height: '80px', width: 'auto', objectFit: 'contain', marginBottom: '0.4rem' }}
+              />
               <h2>UNIVERSIDAD NACIONAL COMANDANTE PADRE GASPAR GARCÍA LAVIANA</h2>
               <h3>República de Nicaragua · SETEC</h3>
               <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>
