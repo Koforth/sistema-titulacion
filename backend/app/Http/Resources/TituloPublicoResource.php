@@ -28,6 +28,7 @@ class TituloPublicoResource extends JsonResource
         $esEntregado = $this->ubicacion_actual === 'ENTREGADO';
 
         // Estructura de evidencias documentales oficiales (SETEC)
+        // Solo se exponen las evidencias que hayan sido efectivamente adjuntadas/agregadas
         $evidenciasGuardadas = $titulacion?->evidencias ?: [];
         $requisitosCatalogo = [
             1 => ['nombre' => 'Cédula de Identidad', 'categoria' => 'General', 'icono' => '🆔', 'archivo_def' => "Cedula_Identidad_{$this->numero_titulo}.pdf", 'size_def' => '1.2 MB'],
@@ -41,22 +42,27 @@ class TituloPublicoResource extends JsonResource
         ];
 
         $evidencias = [];
-        foreach ($requisitosCatalogo as $id => $info) {
-            $archivoCustom = $evidenciasGuardadas[$id] ?? null;
-            $nombreArchivo = is_array($archivoCustom) ? ($archivoCustom['name'] ?? $info['archivo_def']) : (is_string($archivoCustom) ? $archivoCustom : $info['archivo_def']);
-            $size = is_array($archivoCustom) ? ($archivoCustom['size'] ?? $info['size_def']) : $info['size_def'];
-            $disponible = !empty($archivoCustom) || $esEntregado;
+        if (!empty($evidenciasGuardadas) && is_array($evidenciasGuardadas)) {
+            foreach ($requisitosCatalogo as $id => $info) {
+                $archivoCustom = $evidenciasGuardadas[$id] ?? null;
+                if (empty($archivoCustom)) {
+                    continue;
+                }
 
-            $evidencias[] = [
-                'id' => $id,
-                'requisito' => $info['nombre'],
-                'categoria' => $info['categoria'],
-                'icono' => $info['icono'],
-                'nombre_archivo' => $nombreArchivo,
-                'size' => $size,
-                'disponible' => $disponible,
-                'tipo' => 'PDF',
-            ];
+                $nombreArchivo = is_array($archivoCustom) ? ($archivoCustom['name'] ?? $info['archivo_def']) : (is_string($archivoCustom) ? $archivoCustom : $info['archivo_def']);
+                $size = is_array($archivoCustom) ? ($archivoCustom['size'] ?? $info['size_def']) : $info['size_def'];
+
+                $evidencias[] = [
+                    'id' => $id,
+                    'requisito' => $info['nombre'],
+                    'categoria' => $info['categoria'],
+                    'icono' => $info['icono'],
+                    'nombre_archivo' => $nombreArchivo,
+                    'size' => $size,
+                    'disponible' => true,
+                    'tipo' => 'PDF',
+                ];
+            }
         }
 
         return [

@@ -538,13 +538,6 @@ export default function Graduados() {
     });
     if (t.evidencias && Object.keys(t.evidencias).length > 0) {
       setEvidenciasArchivos(t.evidencias as any);
-    } else if (t.id && selectedGraduado) {
-      setEvidenciasArchivos({
-        1: { name: `Cedula_${selectedGraduado.cedula || 'Titulado'}.pdf`, size: '1.4 MB' },
-        2: { name: `Diploma_Bachiller_${selectedGraduado.carnet || 'MINED'}.pdf`, size: '2.1 MB' },
-        3: { name: 'Certificado_Notas_Oficial.pdf', size: '3.8 MB' },
-        7: { name: 'Acta_Defensa_Monografia.pdf', size: '1.9 MB' },
-      });
     } else {
       setEvidenciasArchivos({});
     }
